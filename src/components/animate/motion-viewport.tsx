@@ -39,3 +39,5 @@ export const MotionViewport = forwardRef<HTMLDivElement, MotionViewportProps>(
     );
   }
 );
+
+MotionViewport.displayName = 'MotionViewport';
