@@ -26,7 +26,7 @@ export function Block({ title, tooltip, children, sx }: Props) {
         display: 'flex',
         position: 'relative',
         flexDirection: 'column',
-        border: (theme) => `solid 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)}`,
+        border: (theme) => `solid 1px ${varAlpha(theme.vars.palette.grey[500], 0.12)}`,
         ...sx,
       }}
     >

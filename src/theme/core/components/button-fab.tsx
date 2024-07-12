@@ -85,7 +85,7 @@ const outlinedVariant: Record<string, ComponentsVariants<Theme>['MuiFab']> = {
         boxShadow: 'none',
         backgroundColor: 'transparent',
         color: theme.vars.palette.text.secondary,
-        border: `solid 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.32)}`,
+        border: `solid 1px ${varAlpha(theme.vars.palette.grey[500], 0.32)}`,
         '&:hover': {
           borderColor: 'currentColor',
           boxShadow: '0 0 0 0.75px currentColor',
@@ -135,8 +135,8 @@ const softVariant: Record<string, ComponentsVariants<Theme>['MuiFab']> = {
          */
         [`&.${fabClasses.colorInherit}`]: {
           color: theme.vars.palette.text.primary,
-          backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.08),
-          '&:hover': { backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.24) },
+          backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.08),
+          '&:hover': { backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.24) },
         },
       }),
     },

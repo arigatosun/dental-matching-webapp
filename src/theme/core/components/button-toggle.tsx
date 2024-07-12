@@ -72,7 +72,7 @@ const MuiToggleButtonGroup: Components<Theme>['MuiToggleButtonGroup'] = {
     root: ({ theme }) => ({
       gap: 4,
       padding: 4,
-      border: `solid 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
+      border: `solid 1px ${varAlpha(theme.vars.palette.grey[500], 0.08)}`,
     }),
     grouped: {
       [`&.${toggleButtonClasses.root}`]: { border: 'none', borderRadius: 'inherit' },

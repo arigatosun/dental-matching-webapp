@@ -31,10 +31,10 @@ export function BaseOption({ icon, label, tooltip, selected, ...other }: Props) 
         cursor: 'pointer',
         flexDirection: 'column',
         alignItems: 'flex-start',
-        border: (theme) => `solid 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)}`,
-        '&:hover': { bgcolor: (theme) => varAlpha(theme.vars.palette.grey['500Channel'], 0.08) },
+        border: (theme) => `solid 1px ${varAlpha(theme.vars.palette.grey[500], 0.12)}`,
+        '&:hover': { bgcolor: (theme) => varAlpha(theme.vars.palette.grey[500], 0.08) },
         ...(selected && {
-          bgcolor: (theme) => varAlpha(theme.vars.palette.grey['500Channel'], 0.08),
+          bgcolor: (theme) => varAlpha(theme.vars.palette.grey[500], 0.08),
         }),
       }}
       {...other}

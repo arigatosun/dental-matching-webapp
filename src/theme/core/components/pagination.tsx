@@ -47,8 +47,8 @@ const softVariant: Record<string, ComponentsVariants<Theme>['MuiPagination']> = 
         [`& .${paginationItemClasses.root}`]: {
           [`&.${paginationItemClasses.selected}`]: {
             fontWeight: theme.typography.fontWeightSemiBold,
-            backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.08),
-            '&:hover': { backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.16) },
+            backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.08),
+            '&:hover': { backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.16) },
           },
         },
       }),
@@ -97,12 +97,12 @@ const MuiPagination: Components<Theme>['MuiPagination'] = {
      */
     outlined: ({ ownerState, theme }) => ({
       [`& .${paginationItemClasses.root}`]: {
-        borderColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.24),
+        borderColor: varAlpha(theme.vars.palette.grey[500], 0.24),
         [`&.${paginationItemClasses.selected}`]: {
           borderColor: 'currentColor',
           fontWeight: theme.typography.fontWeightSemiBold,
           ...(ownerState.color === 'standard' && {
-            backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.08),
+            backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.08),
           }),
         },
       },

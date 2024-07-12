@@ -41,7 +41,7 @@ export const StyledArrow = styled('span', {
     borderBottomLeftRadius: size / 4,
     clipPath: 'polygon(0% 0%, 100% 100%, 0% 100%)',
     backgroundColor: theme.vars.palette.background.paper,
-    border: `solid 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)}`,
+    border: `solid 1px ${varAlpha(theme.vars.palette.grey[500], 0.12)}`,
     [stylesMode.dark]: {
       border: `solid 1px ${varAlpha(theme.vars.palette.common.blackChannel, 0.12)}`,
     },

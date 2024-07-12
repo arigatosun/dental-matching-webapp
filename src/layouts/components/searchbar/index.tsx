@@ -117,7 +117,7 @@ export function Searchbar({ data: navItems = [], sx, ...other }: SearchbarProps)
         pr: { sm: 1 },
         borderRadius: { sm: 1.5 },
         cursor: { sm: 'pointer' },
-        bgcolor: { sm: varAlpha(theme.vars.palette.grey['500Channel'], 0.08) },
+        bgcolor: { sm: varAlpha(theme.vars.palette.grey[500], 0.08) },
         ...sx,
       }}
       {...other}

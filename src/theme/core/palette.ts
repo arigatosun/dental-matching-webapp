@@ -133,8 +133,8 @@ export const baseAction = {
   hover: varAlpha(primary.mainChannel, 0.08),
   selected: varAlpha(primary.mainChannel, 0.16),
   focus: varAlpha(primary.mainChannel, 0.24),
-  disabled: varAlpha(grey['500Channel'], 0.8),
-  disabledBackground: varAlpha(grey['500Channel'], 0.24),
+  disabled: varAlpha(grey[500], 0.8),
+  disabledBackground: varAlpha(grey[500], 0.24),
   hoverOpacity: 0.08,
   disabledOpacity: 0.48,
 };
@@ -154,7 +154,7 @@ export const basePalette = {
   error,
   grey,
   common,
-  divider: varAlpha(grey['500Channel'], 0.2),
+  divider: varAlpha(grey[500], 0.2),
   action,
 };
 

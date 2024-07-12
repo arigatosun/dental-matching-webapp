@@ -56,8 +56,8 @@ const softVariant: Record<string, ComponentsVariants<Theme>['MuiButton']> = {
     {
       props: ({ ownerState }) => ownerState.variant === 'soft',
       style: ({ theme }) => ({
-        backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.08),
-        '&:hover': { backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.24) },
+        backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.08),
+        '&:hover': { backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.24) },
         [`&.${buttonClasses.disabled}`]: {
           backgroundColor: theme.vars.palette.action.disabledBackground,
         },
@@ -130,7 +130,7 @@ const MuiButton: Components<Theme>['MuiButton'] = {
         inheritColor: {
           ...(ownerState.color === 'inherit' &&
             !ownerState.disabled && {
-              borderColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.32),
+              borderColor: varAlpha(theme.vars.palette.grey[500], 0.32),
               '&:hover': { backgroundColor: theme.vars.palette.action.hover },
             }),
         },
