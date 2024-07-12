@@ -1,9 +1,7 @@
-import { paths } from '@/routes/paths';
-
-import { CONFIG } from '@/config-global';
-
-import { SvgColor } from '@/components/svg-color';
 import { Icon } from '@iconify/react';
+import { paths } from '@/routes/paths';
+import { CONFIG } from '@/config-global';
+import { SvgColor } from '@/components/svg-color';
 // ----------------------------------------------------------------------
 
 const icon = (name: string) => (

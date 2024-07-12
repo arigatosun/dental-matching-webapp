@@ -6,15 +6,13 @@ import type { Viewport } from 'next';
 
 import { CONFIG } from '@/config-global';
 import { primary } from '@/theme/core/palette';
+import { AuthProvider } from '@/auth/context/jwt';
 import { ThemeProvider } from '@/theme/theme-provider';
-import { getInitColorSchemeScript } from '@/theme/color-scheme-script';
-
 import { ProgressBar } from '@/components/progress-bar';
 import { MotionLazy } from '@/components/animate/motion-lazy';
 import { detectSettings } from '@/components/settings/server';
+import { getInitColorSchemeScript } from '@/theme/color-scheme-script';
 import { SettingsDrawer, defaultSettings, SettingsProvider } from '@/components/settings';
-
-import { AuthProvider } from '@/auth/context/jwt';
 // ----------------------------------------------------------------------
 
 export const viewport: Viewport = {

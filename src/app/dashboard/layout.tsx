@@ -1,7 +1,6 @@
 import { CONFIG } from '@/config-global';
-import { DashboardLayout } from '@/layouts/dashboard';
-
 import { AuthGuard } from '@/auth/guard';
+import { DashboardLayout } from '@/layouts/dashboard';
 
 // ----------------------------------------------------------------------
 

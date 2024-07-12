@@ -1,4 +1,5 @@
 import type { ColorSystemOptions } from '@mui/material/styles';
+
 import { varAlpha, createPaletteChannel } from '../styles';
 
 // ----------------------------------------------------------------------
@@ -129,9 +130,9 @@ export const background = {
 
 // Action
 export const baseAction = {
-  hover: varAlpha(primary['mainChannel'], 0.08),
-  selected: varAlpha(primary['mainChannel'], 0.16),
-  focus: varAlpha(primary['mainChannel'], 0.24),
+  hover: varAlpha(primary.mainChannel, 0.08),
+  selected: varAlpha(primary.mainChannel, 0.16),
+  focus: varAlpha(primary.mainChannel, 0.24),
   disabled: varAlpha(grey['500Channel'], 0.8),
   disabledBackground: varAlpha(grey['500Channel'], 0.24),
   hoverOpacity: 0.08,

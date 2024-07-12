@@ -1,4 +1,3 @@
-import { CONFIG } from '@/config-global';
 
 import { JwtSignInView } from '@/sections/auth/jwt';
 
