@@ -21,11 +21,11 @@ export const Logo = forwardRef<HTMLDivElement, LogoProps>(
     const getLogoSrc = () => {
       switch (variant) {
         case 'loading':
-          return "/logo/logo-icon.svg";
+          return "/images/logo/logo-icon.svg";
         case 'mini':
-          return "/logo/logo-mini.svg";
+          return "/images/logo/logo-mini.svg";
         default:
-          return "/logo/logo-header.svg";
+          return "/images/logo/logo-header.svg";
       }
     };
 

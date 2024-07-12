@@ -13,7 +13,7 @@ export function NavThootChara({ sx, ...other }: StackProps) {
       <Stack alignItems="center">
         <Box sx={{ position: 'relative', width: 200, height: 200 }}>
           <img 
-            src="/logo/thoot-chara.png" 
+            src="/images/logo/thoot-chara.svg" 
             alt="App Character" 
             style={{ 
               width: '100%', 
