@@ -3,7 +3,7 @@ import { paths } from '@/routes/paths';
 import { CONFIG } from '@/config-global';
 
 import { SvgColor } from '@/components/svg-color';
-
+import { Icon } from '@iconify/react';
 // ----------------------------------------------------------------------
 
 const icon = (name: string) => (
@@ -37,6 +37,7 @@ const ICONS = {
   analytics: icon('ic-analytics'),
   dashboard: icon('ic-dashboard'),
   parameter: icon('ic-parameter'),
+  matching: <Icon icon="mdi:handshake" />, // マッチングを表すアイコン
 };
 
 // ----------------------------------------------------------------------
@@ -46,27 +47,31 @@ export const navData = [
    * Overview
    */
   {
-    subheader: 'Overview 6.0.0',
     items: [
-      { title: 'One', path: paths.dashboard.root, icon: ICONS.dashboard },
-      { title: 'Two', path: paths.dashboard.two, icon: ICONS.ecommerce },
-      { title: 'Three', path: paths.dashboard.three, icon: ICONS.analytics },
-    ],
-  },
-  /**
-   * Management
-   */
-  {
-    subheader: 'Management',
-    items: [
+      { title: 'ホーム', path: paths.dashboard.root, icon: ICONS.dashboard },
+      { title: '報酬管理', path: paths.dashboard.rewardManagement, icon: ICONS.ecommerce },
       {
-        title: 'Group',
-        path: paths.dashboard.group.root,
+        title: 'マッチング管理',
+        path: paths.dashboard.matching.root,
+        icon: ICONS.matching,
+        children: [
+          { title: 'オファー中', path: paths.dashboard.matching.offer },
+          { title: '決済待ちオファー', path: paths.dashboard.matching.paymentPending },
+          { title: 'マッチング成立中', path: paths.dashboard.matching.active },
+          { title: '勤務完了リクエスト', path: paths.dashboard.matching.completionRequest },
+          { title: 'マッチング済', path: paths.dashboard.matching.completed },
+        ],
+      },
+      {
+        title: 'マイページ',
+        path: paths.dashboard.mypage.root,
         icon: ICONS.user,
         children: [
-          { title: 'Four', path: paths.dashboard.group.root },
-          { title: 'Five', path: paths.dashboard.group.five },
-          { title: 'Six', path: paths.dashboard.group.six },
+          { title: 'プロフィール', path: paths.dashboard.mypage.profile },
+          { title: '医院詳細', path: paths.dashboard.mypage.clinicDetails },
+          { title: 'thoot実績', path: paths.dashboard.mypage.thootPerformance },
+          { title: '通知設定', path: paths.dashboard.mypage.notificationSettings },
+          { title: 'メールアドレス・PW設定', path: paths.dashboard.mypage.accountSettings },
         ],
       },
     ],

@@ -1,17 +1,12 @@
 import type { NavSectionProps } from '@/components/nav-section';
-
 import { useEffect } from 'react';
-
 import Box from '@mui/material/Box';
 import Drawer, { drawerClasses } from '@mui/material/Drawer';
-
 import { usePathname } from '@/routes/hooks';
-
 import { Logo } from '@/components/logo';
 import { Scrollbar } from '@/components/scrollbar';
 import { NavSectionVertical } from '@/components/nav-section';
-
-import { NavUpgrade } from '../components/nav-upgrade';
+import { NavThootChara } from '../components/nav-thoot-chara';
 
 // ----------------------------------------------------------------------
 
@@ -49,13 +44,13 @@ export function NavMobile({ data, open, onClose, slots, sx, ...other }: NavMobil
     >
       {slots?.topArea ?? (
         <Box sx={{ pl: 3.5, pt: 2.5, pb: 1 }}>
-          <Logo />
+          <Logo variant="mini" />
         </Box>
       )}
 
       <Scrollbar fillContent>
         <NavSectionVertical data={data} sx={{ px: 2, flex: '1 1 auto' }} {...other} />
-        <NavUpgrade />
+        <NavThootChara />
       </Scrollbar>
 
       {slots?.bottomArea}

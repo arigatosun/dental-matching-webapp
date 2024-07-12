@@ -12,7 +12,7 @@ import { iconButtonClasses } from '@mui/material/IconButton';
 
 import { useBoolean } from '@/hooks/use-boolean';
 
-import { _contacts, _notifications } from '@/_mock';
+import { _notifications } from '@/_mock';
 import { varAlpha, stylesMode } from '@/theme/styles';
 
 import { bulletColor } from '@/components/nav-section';
@@ -78,22 +78,11 @@ export function DashboardLayout({ sx, children, data }: DashboardLayoutProps) {
             onOpenNav={mobileNavOpen.onTrue}
             data={{
               nav: navData,
-              langs: [
-                { value: 'en', label: 'English', countryCode: 'GB' },
-                { value: 'fr', label: 'French', countryCode: 'FR' },
-                { value: 'vi', label: 'Vietnamese', countryCode: 'VN' },
-                { value: 'cn', label: 'Chinese', countryCode: 'CN' },
-                { value: 'ar', label: 'Arabic', countryCode: 'SA' },
-              ],
               account: _account,
-              contacts: _contacts,
-              workspaces: _workspaces,
               notifications: _notifications,
             }}
             slotsDisplay={{
               signIn: false,
-              purchase: false,
-              helpLink: false,
             }}
             slots={{
               topArea: (
@@ -223,12 +212,12 @@ function useNavColorVars(
           layout: {
             '--layout-nav-bg': palette.background.default,
             '--layout-nav-horizontal-bg': varAlpha(palette.background.defaultChannel, 0.8),
-            '--layout-nav-border-color': varAlpha(palette.grey['500Channel'], 0.12),
+            '--layout-nav-border-color': varAlpha(palette.grey[500], 0.12),
             '--layout-nav-text-primary-color': palette.text.primary,
             '--layout-nav-text-secondary-color': palette.text.secondary,
             '--layout-nav-text-disabled-color': palette.text.disabled,
             [stylesMode.dark]: {
-              '--layout-nav-border-color': varAlpha(palette.grey['500Channel'], 0.08),
+              '--layout-nav-border-color': varAlpha(palette.grey[500], 0.08),
               '--layout-nav-horizontal-bg': varAlpha(palette.background.defaultChannel, 0.96),
             },
           },
@@ -238,14 +227,14 @@ function useNavColorVars(
         return {
           layout: {
             '--layout-nav-bg': palette.grey[900],
-            '--layout-nav-horizontal-bg': varAlpha(palette.grey['900Channel'], 0.96),
+            '--layout-nav-horizontal-bg': varAlpha(palette.grey[900], 0.96),
             '--layout-nav-border-color': 'transparent',
             '--layout-nav-text-primary-color': palette.common.white,
             '--layout-nav-text-secondary-color': palette.grey[500],
             '--layout-nav-text-disabled-color': palette.grey[600],
             [stylesMode.dark]: {
               '--layout-nav-bg': palette.grey[800],
-              '--layout-nav-horizontal-bg': varAlpha(palette.grey['800Channel'], 0.8),
+              '--layout-nav-horizontal-bg': varAlpha(palette.grey[800], 0.8),
             },
           },
           section: {

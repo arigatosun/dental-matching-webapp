@@ -1,12 +1,9 @@
 'use client';
 
 import type { Theme, SxProps, Breakpoint } from '@mui/material/styles';
-
+import { Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
-
 import { useBoolean } from '@/hooks/use-boolean';
-
-import { Section } from './section';
 import { Main, Content } from './main';
 import { HeaderBase } from '../core/header-base';
 import { LayoutSection } from '../core/layout-section';
@@ -25,28 +22,19 @@ export type AuthSplitLayoutProps = {
 
 export function AuthSplitLayout({ sx, section, children }: AuthSplitLayoutProps) {
   const mobileNavOpen = useBoolean();
-
   const layoutQuery: Breakpoint = 'md';
 
   return (
     <LayoutSection
       headerSection={
-        /** **************************************
-         * Header
-         *************************************** */
         <HeaderBase
           disableElevation
           layoutQuery={layoutQuery}
           onOpenNav={mobileNavOpen.onTrue}
           slotsDisplay={{
             signIn: false,
-            account: false,
-            purchase: false,
-            contacts: false,
-            searchbar: false,
-            workspaces: false,
+            account: false, 
             menuButton: false,
-            localization: false,
             notifications: false,
           }}
           slots={{
@@ -60,26 +48,41 @@ export function AuthSplitLayout({ sx, section, children }: AuthSplitLayoutProps)
           sx={{ position: { [layoutQuery]: 'fixed' } }}
         />
       }
-      /** **************************************
-       * Footer
-       *************************************** */
       footerSection={null}
-      /** **************************************
-       * Style
-       *************************************** */
-      sx={sx}
+      sx={{
+        ...sx,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+      }}
       cssVars={{
         '--layout-auth-content-width': '420px',
       }}
     >
       <Main layoutQuery={layoutQuery}>
-        <Section
-          title={section?.title}
-          layoutQuery={layoutQuery}
-          imgUrl={section?.imgUrl}
-          subtitle={section?.subtitle}
-        />
-        <Content layoutQuery={layoutQuery}>{children}</Content>
+        <Content layoutQuery={layoutQuery}>
+          <Stack
+            direction="row"
+            sx={{
+              flex: 1,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: 'calc(100vh - var(--layout-header-height))',
+            }}
+          >
+            <Stack
+              sx={{
+                width: 1,
+                maxWidth: 480,
+                px: { xs: 2, md: 3 },
+                py: { xs: 3, md: 0 },
+              }}
+            >
+              {children}
+            </Stack>
+          </Stack>
+        </Content>
       </Main>
     </LayoutSection>
   );

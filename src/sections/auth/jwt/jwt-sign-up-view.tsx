@@ -1,7 +1,7 @@
 'use client';
 
 import { z as zod } from 'zod';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -30,19 +30,30 @@ import { useAuthContext } from '@/auth/hooks';
 export type SignUpSchemaType = zod.infer<typeof SignUpSchema>;
 
 export const SignUpSchema = zod.object({
-  firstName: zod.string().min(1, { message: 'First name is required!' }),
-  lastName: zod.string().min(1, { message: 'Last name is required!' }),
   email: zod
     .string()
-    .min(1, { message: 'Email is required!' })
-    .email({ message: 'Email must be a valid email address!' }),
+    .min(1, { message: 'メールアドレスは必須です' })
+    .email({ message: '有効なメールアドレスを入力してください' }),
   password: zod
     .string()
-    .min(1, { message: 'Password is required!' })
-    .min(6, { message: 'Password must be at least 6 characters!' }),
+    .min(1, { message: 'パスワードは必須です' })
+    .min(8, { message: 'パスワードは8文字以上である必要があります' })
+    .regex(/[A-Z]/, { message: 'パスワードには少なくとも1つの大文字が必要です' }),
 });
 
 // ----------------------------------------------------------------------
+
+const usePasswordValidation = (password: string) => {
+  const [validLength, setValidLength] = useState(false);
+  const [hasUpperCase, setHasUpperCase] = useState(false);
+
+  useEffect(() => {
+    setValidLength(password.length >= 8);
+    setHasUpperCase(/[A-Z]/.test(password));
+  }, [password]);
+
+  return { validLength, hasUpperCase };
+};
 
 export function JwtSignUpView() {
   const { checkUserSession } = useAuthContext();
@@ -54,10 +65,8 @@ export function JwtSignUpView() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const defaultValues = {
-    firstName: 'Hello',
-    lastName: 'Friend',
     email: 'hello@gmail.com',
-    password: '@demo1',
+    password: '',
   };
 
   const methods = useForm<SignUpSchemaType>({
@@ -68,18 +77,20 @@ export function JwtSignUpView() {
   const {
     handleSubmit,
     formState: { isSubmitting },
+    watch,
   } = methods;
+
+  const watchedPassword = watch('password');
+  const { validLength, hasUpperCase } = usePasswordValidation(watchedPassword);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
       await signUp({
         email: data.email,
         password: data.password,
-        firstName: data.firstName,
-        lastName: data.lastName,
       });
       await checkUserSession?.();
-
+  
       router.refresh();
     } catch (error) {
       console.error(error);
@@ -89,15 +100,15 @@ export function JwtSignUpView() {
 
   const renderHead = (
     <Stack spacing={1.5} sx={{ mb: 5 }}>
-      <Typography variant="h5">Get started absolutely free</Typography>
+      <Typography variant="h5">Thootに新規登録</Typography>
 
       <Stack direction="row" spacing={0.5}>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Already have an account?
+          アカウントをお持ちの方は
         </Typography>
 
         <Link component={RouterLink} href={paths.auth.jwt.signIn} variant="subtitle2">
-          Sign in
+          ログイン
         </Link>
       </Stack>
     </Stack>
@@ -105,40 +116,50 @@ export function JwtSignUpView() {
 
   const renderForm = (
     <Stack spacing={3}>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-        <Field.Text name="firstName" label="First name" InputLabelProps={{ shrink: true }} />
-        <Field.Text name="lastName" label="Last name" InputLabelProps={{ shrink: true }} />
+      <Field.Text name="email" label="メールアドレス" InputLabelProps={{ shrink: true }} />
+
+      <Stack spacing={1}>
+        <Field.Text
+          name="password"
+          label="パスワード"
+          type={password.value ? 'text' : 'password'}
+          InputLabelProps={{ shrink: true }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={password.onToggle} edge="end">
+                  <Iconify icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+        <Stack direction="row" spacing={2}>
+          <Typography
+            variant="caption"
+            color={validLength ? 'success.main' : 'text.secondary'}
+          >
+            ✓ 8文字以上
+          </Typography>
+          <Typography
+            variant="caption"
+            color={hasUpperCase ? 'success.main' : 'text.secondary'}
+          >
+            ✓ 大文字を1つ以上含む
+          </Typography>
+        </Stack>
       </Stack>
-
-      <Field.Text name="email" label="Email address" InputLabelProps={{ shrink: true }} />
-
-      <Field.Text
-        name="password"
-        label="Password"
-        placeholder="6+ characters"
-        type={password.value ? 'text' : 'password'}
-        InputLabelProps={{ shrink: true }}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={password.onToggle} edge="end">
-                <Iconify icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
 
       <LoadingButton
         fullWidth
-        color="inherit"
+        color="secondary"
         size="large"
         type="submit"
         variant="contained"
         loading={isSubmitting}
-        loadingIndicator="Create account..."
+        loadingIndicator="アカウント作成中..."
       >
-        Create account
+        アカウント作成
       </LoadingButton>
     </Stack>
   );
@@ -153,15 +174,15 @@ export function JwtSignUpView() {
         color: 'text.secondary',
       }}
     >
-      {'By signing up, I agree to '}
+      {'登録することで、'}
       <Link underline="always" color="text.primary">
-        Terms of service
+        利用規約
       </Link>
-      {' and '}
+      {' と '}
       <Link underline="always" color="text.primary">
-        Privacy policy
+        プライバシーポリシー
       </Link>
-      .
+      に同意したものとみなされます。
     </Typography>
   );
 

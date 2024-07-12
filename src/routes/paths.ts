@@ -43,12 +43,22 @@ export const paths = {
   // DASHBOARD
   dashboard: {
     root: ROOTS.DASHBOARD,
-    two: `${ROOTS.DASHBOARD}/two`,
-    three: `${ROOTS.DASHBOARD}/three`,
-    group: {
-      root: `${ROOTS.DASHBOARD}/group`,
-      five: `${ROOTS.DASHBOARD}/group/five`,
-      six: `${ROOTS.DASHBOARD}/group/six`,
+    rewardManagement: `${ROOTS.DASHBOARD}/reward-management`,
+    matching: {
+      root: `${ROOTS.DASHBOARD}/matching`,
+      offer: `${ROOTS.DASHBOARD}/matching/offer`,
+      paymentPending: `${ROOTS.DASHBOARD}/matching/payment-pending`,
+      active: `${ROOTS.DASHBOARD}/matching/active`,
+      completionRequest: `${ROOTS.DASHBOARD}/matching/completion-request`,
+      completed: `${ROOTS.DASHBOARD}/matching/completed`,
+    },
+    mypage: {
+      root: `${ROOTS.DASHBOARD}/mypage`,
+      profile: `${ROOTS.DASHBOARD}/mypage/profile`,
+      clinicDetails: `${ROOTS.DASHBOARD}/mypage/clinic-details`,
+      thootPerformance: `${ROOTS.DASHBOARD}/mypage/thoot-performance`,
+      notificationSettings: `${ROOTS.DASHBOARD}/mypage/notification-settings`,
+      accountSettings: `${ROOTS.DASHBOARD}/mypage/account-settings`,
     },
   },
-};
+}

@@ -80,15 +80,15 @@ export function JwtSignInView() {
 
   const renderHead = (
     <Stack spacing={1.5} sx={{ mb: 5 }}>
-      <Typography variant="h5">Sign in to your account</Typography>
+      <Typography variant="h5">Thootにログイン</Typography>
 
       <Stack direction="row" spacing={0.5}>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {`Don't have an account?`}
+          {`アカウントをお持ちではありませんか?`}
         </Typography>
 
         <Link component={RouterLink} href={paths.auth.jwt.signUp} variant="subtitle2">
-          Get started
+          新規登録
         </Link>
       </Stack>
     </Stack>
@@ -96,19 +96,18 @@ export function JwtSignInView() {
 
   const renderForm = (
     <Stack spacing={3}>
-      <Field.Text name="email" label="Email address" InputLabelProps={{ shrink: true }} />
-
+      <Field.Text name="email" label="メールアドレス" InputLabelProps={{ shrink: true }} />
+  
       <Stack spacing={1.5}>
         <Link
           component={RouterLink}
           href="#"
           variant="body2"
-          color="inherit"
           sx={{ alignSelf: 'flex-end' }}
         >
-          Forgot password?
+          パスワードを忘れた場合
         </Link>
-
+  
         <Field.Text
           name="password"
           label="Password"
@@ -126,17 +125,20 @@ export function JwtSignInView() {
           }}
         />
       </Stack>
-
+  
       <LoadingButton
         fullWidth
-        color="inherit"
+        color="secondary"
         size="large"
         type="submit"
         variant="contained"
         loading={isSubmitting}
         loadingIndicator="Sign in..."
+        sx={{
+          color: 'white', // テキストを白に設定
+        }}
       >
-        Sign in
+        ログイン
       </LoadingButton>
     </Stack>
   );
@@ -144,12 +146,6 @@ export function JwtSignInView() {
   return (
     <>
       {renderHead}
-
-      <Alert severity="info" sx={{ mb: 3 }}>
-        Use <strong>{defaultValues.email}</strong>
-        {' with password '}
-        <strong>{defaultValues.password}</strong>
-      </Alert>
 
       {!!errorMsg && (
         <Alert severity="error" sx={{ mb: 3 }}>
