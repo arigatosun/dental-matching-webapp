@@ -5,7 +5,14 @@ module.exports = {
   root: true,
   env: { browser: true, es2020: true },
   plugins: ['perfectionist', 'unused-imports', '@typescript-eslint', 'prettier'],
-  extends: ['airbnb', 'airbnb-typescript', 'airbnb/hooks', 'prettier'],
+  extends: [
+    'airbnb',
+    'airbnb-typescript',
+    'airbnb/hooks',
+    'prettier',
+    'next',
+    'next/core-web-vitals',
+  ],
   parserOptions: {
     sourceType: 'module',
     ecmaVersion: 'latest',
@@ -105,5 +112,17 @@ module.exports = {
         'internal-pattern': ['src/**'],
       },
     ],
+    // Next.js specific rules
+    'react/jsx-uses-react': 'off',
+    '@next/next/no-html-link-for-pages': 'error',
+    '@next/next/no-img-element': 'error',
   },
+  overrides: [
+    {
+      files: ['pages/**/*.{ts,tsx}', 'app/**/*.{ts,tsx}'],
+      rules: {
+        'react/react-in-jsx-scope': 'off',
+      },
+    },
+  ],
 };
