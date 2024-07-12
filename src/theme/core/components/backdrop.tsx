@@ -10,7 +10,7 @@ const MuiBackdrop: Components<Theme>['MuiBackdrop'] = {
    *************************************** */
   styleOverrides: {
     root: ({ theme }) => ({
-      backgroundColor: varAlpha(theme.vars.palette.grey['800Channel'], 0.48),
+      backgroundColor: varAlpha(theme.vars.palette.grey[800], 0.48),
     }),
     invisible: { background: 'transparent' },
   },
