@@ -6,12 +6,12 @@ import { Iconify } from '@/components/iconify';
 
 export const _account = [
   {
-    label: 'Home',
+    label: 'ホーム',
     href: '/',
     icon: <Iconify icon="solar:home-angle-bold-duotone" />,
   },
   {
-    label: 'Profile',
+    label: 'マイページ',
     href: '#',
     icon: (
       <SvgIcon>
@@ -28,13 +28,13 @@ export const _account = [
     ),
   },
   {
-    label: 'Projects',
+    label: 'メールアドレス変更',
     href: '#',
     icon: <Iconify icon="solar:notes-bold-duotone" />,
     info: '3',
   },
   {
-    label: 'Subscription',
+    label: 'パスワード変更',
     href: '#',
     icon: (
       <SvgIcon>
@@ -57,12 +57,17 @@ export const _account = [
     ),
   },
   {
-    label: 'Security',
+    label: 'メール通知設定',
     href: '#',
     icon: <Iconify icon="solar:shield-keyhole-bold-duotone" />,
   },
   {
-    label: 'Account settings',
+    label: '利用規約・ヘルプ',
+    href: '#',
+    icon: <Iconify icon="solar:settings-bold-duotone" />,
+  },
+  {
+    label: '退会する',
     href: '#',
     icon: <Iconify icon="solar:settings-bold-duotone" />,
   },
