@@ -225,3 +225,5 @@ const StyledNavItem = styled(ButtonBase, {
     ...(disabled && sharedStyles.disabled),
   };
 });
+
+NavItem.displayName = 'NavItem';

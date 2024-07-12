@@ -1,5 +1,5 @@
 import type { StackProps } from '@mui/material/Stack';
-
+import Image from 'next/image';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -11,21 +11,18 @@ export function NavThootChara({ sx, ...other }: StackProps) {
     <Stack sx={{ px: 2, py: 5, textAlign: 'center', ...sx }} {...other}>
       <Stack alignItems="center">
         <Box sx={{ position: 'relative', width: 200, height: 200 }}>
-          <img 
+          <Image 
             src="/images/logo/thoot-chara.svg" 
             alt="App Character" 
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'contain' // 画像のアスペクト比を保持しつつ、Box内に収まるようにします
-            }} 
+            layout="fill"
+            objectFit="contain"
           />
         </Box>
 
         <Button 
           variant="contained" 
           href="#" 
-          sx={{ mt: 3 }} // マージンを少し大きくして、ボタンとロゴの間隔を調整
+          sx={{ mt: 3 }}
         >
           新着情報を確認
         </Button>
@@ -34,9 +31,12 @@ export function NavThootChara({ sx, ...other }: StackProps) {
   );
 }
 
+NavThootChara.displayName = 'NavThootChara';
+
 // ----------------------------------------------------------------------
 
-// UpgradeBlock 関数は変更なしのため、そのまま残しています
 export function UpgradeBlock({ sx, ...other }: StackProps) {
   // ... (元のコードをそのまま維持)
 }
+
+UpgradeBlock.displayName = 'UpgradeBlock';

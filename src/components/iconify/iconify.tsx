@@ -12,7 +12,7 @@ import type { IconifyProps } from './types';
 
 // ----------------------------------------------------------------------
 
-export const Iconify = forwardRef<SVGElement, IconifyProps>(
+ export const Iconify = forwardRef<SVGElement, IconifyProps>(
   ({ className, width = 20, sx, ...other }, ref) => {
     const baseStyles = {
       width,
@@ -43,5 +43,6 @@ export const Iconify = forwardRef<SVGElement, IconifyProps>(
   }
 );
 
+Iconify.displayName = 'Iconify';
 // https://iconify.design/docs/iconify-icon/disable-cache.html
 disableCache('local');

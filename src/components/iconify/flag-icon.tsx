@@ -45,3 +45,5 @@ export const FlagIcon = forwardRef<HTMLSpanElement, FlagIconProps>(
     );
   }
 );
+
+FlagIcon.displayName ='FlagIcon';
