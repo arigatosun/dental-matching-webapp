@@ -1,10 +1,10 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-
 import { varAlpha } from '@/theme/styles';
 import { DashboardContent } from '@/layouts/dashboard';
+
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 // ----------------------------------------------------------------------
 

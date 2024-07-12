@@ -1,8 +1,16 @@
 'use client';
 
 import { z as zod } from 'zod';
-import { useState, useEffect } from 'react';
+import { paths } from '@/routes/paths';
 import { useForm } from 'react-hook-form';
+import { useRouter } from '@/routes/hooks';
+import { useState, useEffect } from 'react';
+import { signUp } from '@/auth/context/jwt';
+import { useAuthContext } from '@/auth/hooks';
+import { Iconify } from '@/components/iconify';
+import { RouterLink } from '@/routes/components';
+import { useBoolean } from '@/hooks/use-boolean';
+import { Form, Field } from '@/components/hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import Link from '@mui/material/Link';
@@ -12,18 +20,6 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
-
-import { paths } from '@/routes/paths';
-import { useRouter } from '@/routes/hooks';
-import { RouterLink } from '@/routes/components';
-
-import { useBoolean } from '@/hooks/use-boolean';
-
-import { Iconify } from '@/components/iconify';
-import { Form, Field } from '@/components/hook-form';
-
-import { signUp } from '@/auth/context/jwt';
-import { useAuthContext } from '@/auth/hooks';
 
 // ----------------------------------------------------------------------
 
@@ -174,7 +170,7 @@ export function JwtSignUpView() {
         color: 'text.secondary',
       }}
     >
-      {'登録することで、'}
+      登録することで、
       <Link underline="always" color="text.primary">
         利用規約
       </Link>

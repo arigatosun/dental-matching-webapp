@@ -5,18 +5,15 @@ import type { NavSectionProps } from '@/components/nav-section';
 import type { Theme, SxProps, CSSObject, Breakpoint } from '@mui/material/styles';
 
 import { useMemo } from 'react';
+import { _notifications } from '@/_mock';
+import { useBoolean } from '@/hooks/use-boolean';
+import { varAlpha, stylesMode } from '@/theme/styles';
+import { bulletColor } from '@/components/nav-section';
+import { useSettingsContext } from '@/components/settings';
 
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
 import { iconButtonClasses } from '@mui/material/IconButton';
-
-import { useBoolean } from '@/hooks/use-boolean';
-
-import { _notifications } from '@/_mock';
-import { varAlpha, stylesMode } from '@/theme/styles';
-
-import { bulletColor } from '@/components/nav-section';
-import { useSettingsContext } from '@/components/settings';
 
 import { Main } from './main';
 import { NavMobile } from './nav-mobile';
@@ -25,7 +22,6 @@ import { NavVertical } from './nav-vertical';
 import { NavHorizontal } from './nav-horizontal';
 import { _account } from '../config-nav-account';
 import { HeaderBase } from '../core/header-base';
-import { _workspaces } from '../config-nav-workspace';
 import { LayoutSection } from '../core/layout-section';
 import { navData as dashboardNavData } from '../config-nav-dashboard';
 

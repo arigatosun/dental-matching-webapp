@@ -1,9 +1,12 @@
 'use client';
 
 import type { Theme, SxProps, Breakpoint } from '@mui/material/styles';
+
+import { useBoolean } from '@/hooks/use-boolean';
+
 import { Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import { useBoolean } from '@/hooks/use-boolean';
+
 import { Main, Content } from './main';
 import { HeaderBase } from '../core/header-base';
 import { LayoutSection } from '../core/layout-section';

@@ -1,11 +1,14 @@
 import type { NavSectionProps } from '@/components/nav-section';
+
 import { useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Drawer, { drawerClasses } from '@mui/material/Drawer';
-import { usePathname } from '@/routes/hooks';
 import { Logo } from '@/components/logo';
+import { usePathname } from '@/routes/hooks';
 import { Scrollbar } from '@/components/scrollbar';
 import { NavSectionVertical } from '@/components/nav-section';
+
+import Box from '@mui/material/Box';
+import Drawer, { drawerClasses } from '@mui/material/Drawer';
+
 import { NavThootChara } from '../components/nav-thoot-chara';
 
 // ----------------------------------------------------------------------

@@ -2,8 +2,16 @@
 
 import { z as zod } from 'zod';
 import { useState } from 'react';
+import { paths } from '@/routes/paths';
 import { useForm } from 'react-hook-form';
+import { useRouter } from '@/routes/hooks';
+import { useAuthContext } from '@/auth/hooks';
+import { Iconify } from '@/components/iconify';
+import { RouterLink } from '@/routes/components';
+import { useBoolean } from '@/hooks/use-boolean';
+import { Form, Field } from '@/components/hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { signInWithPassword } from '@/auth/context/jwt';
 
 import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
@@ -12,18 +20,6 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
-
-import { paths } from '@/routes/paths';
-import { useRouter } from '@/routes/hooks';
-import { RouterLink } from '@/routes/components';
-
-import { useBoolean } from '@/hooks/use-boolean';
-
-import { Iconify } from '@/components/iconify';
-import { Form, Field } from '@/components/hook-form';
-
-import { useAuthContext } from '@/auth/hooks';
-import { signInWithPassword } from '@/auth/context/jwt';
 
 // ----------------------------------------------------------------------
 
@@ -84,7 +80,7 @@ export function JwtSignInView() {
 
       <Stack direction="row" spacing={0.5}>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {`アカウントをお持ちではありませんか?`}
+          アカウントをお持ちではありませんか?
         </Typography>
 
         <Link component={RouterLink} href={paths.auth.jwt.signUp} variant="subtitle2">

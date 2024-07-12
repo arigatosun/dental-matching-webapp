@@ -2,7 +2,12 @@
 
 import type { IconButtonProps } from '@mui/material/IconButton';
 
+import { useRouter } from '@/routes/hooks';
+import { useMockedUser } from '@/auth/hooks';
 import { useState, useCallback } from 'react';
+import { Iconify } from '@/components/iconify';
+import { Scrollbar } from '@/components/scrollbar';
+import { AnimateAvatar } from '@/components/animate';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -11,15 +16,6 @@ import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-
-import { paths } from '@/routes/paths';
-import { useRouter, usePathname } from '@/routes/hooks';
-
-import { Iconify } from '@/components/iconify';
-import { Scrollbar } from '@/components/scrollbar';
-import { AnimateAvatar } from '@/components/animate';
-
-import { useMockedUser } from '@/auth/hooks';
 
 import { AccountButton } from './account-button';
 import { SignOutButton } from './sign-out-button';
@@ -39,8 +35,6 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
   const theme = useTheme();
 
   const router = useRouter();
-
-  const pathname = usePathname();
 
   const { user } = useMockedUser();
 

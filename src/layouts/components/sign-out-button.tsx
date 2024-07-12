@@ -2,13 +2,11 @@ import type { ButtonProps } from '@mui/material/Button';
 import type { Theme, SxProps } from '@mui/material/styles';
 
 import { useCallback } from 'react';
-
-import Button from '@mui/material/Button';
-
 import { useRouter } from '@/routes/hooks';
-
 import { useAuthContext } from '@/auth/hooks';
 import { signOut } from '@/auth/context/jwt/action';
+
+import Button from '@mui/material/Button';
 
 // ----------------------------------------------------------------------
 

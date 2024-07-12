@@ -1,5 +1,4 @@
 import { CONFIG } from '@/config-global';
-
 import { BlankView } from '@/sections/blank/view';
 
 // ----------------------------------------------------------------------

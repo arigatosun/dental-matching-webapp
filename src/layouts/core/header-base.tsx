@@ -1,7 +1,10 @@
 import type { NavSectionProps } from '@/components/nav-section';
+
+import { Logo } from '@/components/logo';
+
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
-import { Logo } from '@/components/logo';
+
 import { HeaderSection } from './header-section';
 import { MenuButton } from '../components/menu-button';
 import { SignInButton } from '../components/sign-in-button';
