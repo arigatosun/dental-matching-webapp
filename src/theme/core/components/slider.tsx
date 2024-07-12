@@ -51,7 +51,7 @@ const MuiSlider: Components<Theme>['MuiSlider'] = {
       style: ({ theme }) => ({
         [`&.${sliderClasses.disabled}`]: {
           color: varAlpha(
-            theme.vars.palette.grey['500Channel'],
+            theme.vars.palette.grey[500],
             theme.vars.palette.action.disabledOpacity
           ),
         },
@@ -71,13 +71,13 @@ const MuiSlider: Components<Theme>['MuiSlider'] = {
         height: SIZE.thumb.medium,
         boxShadow: theme.customShadows.z1,
         color: theme.vars.palette.common.white,
-        borderColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.08),
+        borderColor: varAlpha(theme.vars.palette.grey[500], 0.08),
         '&::before': {
           opacity: 0.4,
           boxShadow: 'none',
           width: 'calc(100% - 4px)',
           height: 'calc(100% - 4px)',
-          backgroundImage: `linear-gradient(180deg, ${theme.vars.palette.grey[500]} 0%, ${varAlpha(theme.vars.palette.grey['500Channel'], 0)} 100%)`,
+          backgroundImage: `linear-gradient(180deg, ${theme.vars.palette.grey[500]} 0%, ${varAlpha(theme.vars.palette.grey[500], 0)} 100%)`,
           [stylesMode.dark]: { opacity: 0.8 },
         },
       },
@@ -91,7 +91,7 @@ const MuiSlider: Components<Theme>['MuiSlider'] = {
     mark: ({ theme }) => ({
       width: 1,
       height: SIZE.mark.medium,
-      backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.48),
+      backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.48),
       '&[data-index="0"]': { display: 'none' },
     }),
     markActive: ({ theme }) => ({

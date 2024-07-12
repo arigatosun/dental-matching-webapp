@@ -8,7 +8,7 @@ import type { ThemeColorScheme } from '../types';
 // ----------------------------------------------------------------------
 
 export function shadows(colorScheme: ThemeColorScheme): Shadows {
-  const colorChannel = colorScheme === 'light' ? grey['500Channel'] : common.blackChannel;
+  const colorChannel = colorScheme === 'light' ? grey[500] : common.blackChannel;
 
   const color1 = varAlpha(colorChannel, 0.2);
   const color2 = varAlpha(colorChannel, 0.14);

@@ -40,7 +40,7 @@ const MuiInput: Components<Theme>['MuiInput'] = {
    *************************************** */
   styleOverrides: {
     underline: ({ theme }) => ({
-      '&::before': { borderBottomColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.32) },
+      '&::before': { borderBottomColor: varAlpha(theme.vars.palette.grey[500], 0.32) },
       '&::after': { borderBottomColor: theme.vars.palette.text.primary },
     }),
   },
@@ -71,7 +71,7 @@ const MuiOutlinedInput: Components<Theme>['MuiOutlinedInput'] = {
       },
     }),
     notchedOutline: ({ theme }) => ({
-      borderColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.2),
+      borderColor: varAlpha(theme.vars.palette.grey[500], 0.2),
       transition: theme.transitions.create(['border-color'], {
         duration: theme.transitions.duration.shortest,
       }),
@@ -93,10 +93,10 @@ const MuiFilledInput: Components<Theme>['MuiFilledInput'] = {
   styleOverrides: {
     root: ({ theme }) => ({
       borderRadius: theme.shape.borderRadius,
-      backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.08),
-      '&:hover': { backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.16) },
+      backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.08),
+      '&:hover': { backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.16) },
       [`&.${filledInputClasses.focused}`]: {
-        backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.16),
+        backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.16),
       },
       [`&.${filledInputClasses.error}`]: {
         backgroundColor: varAlpha(theme.vars.palette.error.mainChannel, 0.08),

@@ -36,7 +36,7 @@ const MuiSwitch: Components<Theme>['MuiSwitch'] = {
     track: ({ theme }) => ({
       opacity: 1,
       borderRadius: 10,
-      backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.48),
+      backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.48),
     }),
     thumb: ({ theme }) => ({ color: theme.vars.palette.common.white }),
     sizeMedium: {

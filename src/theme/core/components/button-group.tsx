@@ -55,7 +55,7 @@ const softVariant: Record<string, ComponentsVariants<Theme>['MuiButtonGroup']> =
       props: ({ ownerState }) => ownerState.variant === 'soft',
       style: ({ theme }) => ({
         [buttonClasses]: {
-          borderRight: `solid 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.32)}`,
+          borderRight: `solid 1px ${varAlpha(theme.vars.palette.grey[500], 0.32)}`,
           [`&.${buttonGroupClasses.disabled}`]: {
             borderColor: theme.vars.palette.action.disabledBackground,
           },
@@ -63,7 +63,7 @@ const softVariant: Record<string, ComponentsVariants<Theme>['MuiButtonGroup']> =
         [`&.${buttonGroupClasses.vertical}`]: {
           [buttonClasses]: {
             borderRight: 'none',
-            borderBottom: `solid 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.32)}`,
+            borderBottom: `solid 1px ${varAlpha(theme.vars.palette.grey[500], 0.32)}`,
             [`&.${buttonGroupClasses.disabled}`]: {
               borderColor: theme.vars.palette.action.disabledBackground,
             },
@@ -106,7 +106,7 @@ const MuiButtonGroup: Components<Theme>['MuiButtonGroup'] = {
         })),
         inheritColor: {
           ...(ownerState.color === 'inherit' && {
-            [buttonClasses]: { borderColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.32) },
+            [buttonClasses]: { borderColor: varAlpha(theme.vars.palette.grey[500], 0.32) },
           }),
         },
         disabled: {
@@ -132,7 +132,7 @@ const MuiButtonGroup: Components<Theme>['MuiButtonGroup'] = {
         })),
         inheritColor: {
           ...(ownerState.color === 'inherit' && {
-            [buttonClasses]: { borderColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.32) },
+            [buttonClasses]: { borderColor: varAlpha(theme.vars.palette.grey[500], 0.32) },
           }),
         },
         disabled: {

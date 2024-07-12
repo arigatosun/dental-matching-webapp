@@ -30,7 +30,7 @@ const MuiRating: Components<Theme>['MuiRating'] = {
    *************************************** */
   styleOverrides: {
     root: { [`&.${ratingClasses.disabled}`]: { opacity: 0.48 } },
-    iconEmpty: ({ theme }) => ({ color: varAlpha(theme.vars.palette.grey['500Channel'], 0.48) }),
+    iconEmpty: ({ theme }) => ({ color: varAlpha(theme.vars.palette.grey[500], 0.48) }),
     sizeSmall: { [`& .${svgIconClasses.root}`]: { width: 20, height: 20 } },
     sizeMedium: { [`& .${svgIconClasses.root}`]: { width: 24, height: 24 } },
     sizeLarge: { [`& .${svgIconClasses.root}`]: { width: 28, height: 28 } },

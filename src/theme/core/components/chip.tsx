@@ -65,8 +65,8 @@ const softVariant: Record<string, ComponentsVariants<Theme>['MuiChip']> = {
     {
       props: ({ ownerState }) => ownerState.variant === 'soft' && ownerState.color === 'default',
       style: ({ theme }) => ({
-        backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.16),
-        '&:hover': { backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.32) },
+        backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.16),
+        '&:hover': { backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.32) },
       }),
     },
   ],
@@ -161,7 +161,7 @@ const MuiChip: Components<Theme>['MuiChip'] = {
         defaultColor: {
           ...(!ownerState.disabled &&
             ownerState.color === 'default' && {
-              borderColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.32),
+              borderColor: varAlpha(theme.vars.palette.grey[500], 0.32),
             }),
         },
       };

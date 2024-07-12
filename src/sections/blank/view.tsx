@@ -23,7 +23,7 @@ export function BlankView({ title = 'Blank' }: Props) {
           width: 1,
           height: 320,
           borderRadius: 2,
-          bgcolor: (theme) => varAlpha(theme.vars.palette.grey['500Channel'], 0.04),
+          bgcolor: (theme) => varAlpha(theme.vars.palette.grey[500], 0.04),
           border: (theme) => `dashed 1px ${theme.vars.palette.divider}`,
         }}
       />

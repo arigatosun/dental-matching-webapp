@@ -44,7 +44,7 @@ export const StyledLabel = styled(Box)(({
        */
       ...(variant === 'soft' && {
         color: theme.vars.palette.text.secondary,
-        backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.16),
+        backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.16),
       }),
       /**
        * @variant inverted

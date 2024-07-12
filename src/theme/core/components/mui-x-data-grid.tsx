@@ -201,7 +201,7 @@ const MuiDataGrid: Components<Theme>['MuiDataGrid'] = {
     filterFormDeleteIcon: ({ theme }) => ({
       [`& .${iconButtonClasses.root}`]: {
         padding: theme.spacing(0.25),
-        backgroundColor: varAlpha(theme.vars.palette.grey['500Channel'], 0.16),
+        backgroundColor: varAlpha(theme.vars.palette.grey[500], 0.16),
         [`& .${svgIconClasses.root}`]: { width: 16, height: 16 },
       },
     }),
