@@ -3,7 +3,7 @@ import { paths } from '@/routes/paths';
 import { CONFIG } from '@/config-global';
 
 import { SvgColor } from '@/components/svg-color';
-
+import { Icon } from '@iconify/react';
 // ----------------------------------------------------------------------
 
 const icon = (name: string) => (
@@ -37,6 +37,7 @@ const ICONS = {
   analytics: icon('ic-analytics'),
   dashboard: icon('ic-dashboard'),
   parameter: icon('ic-parameter'),
+  matching: <Icon icon="mdi:handshake" />, // マッチングを表すアイコン
 };
 
 // ----------------------------------------------------------------------
@@ -52,7 +53,7 @@ export const navData = [
       {
         title: 'マッチング管理',
         path: paths.dashboard.matching.root,
-        icon: ICONS.user,
+        icon: ICONS.matching,
         children: [
           { title: 'オファー中', path: paths.dashboard.matching.offer },
           { title: '決済待ちオファー', path: paths.dashboard.matching.paymentPending },

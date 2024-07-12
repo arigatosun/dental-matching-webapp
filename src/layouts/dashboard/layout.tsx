@@ -79,13 +79,10 @@ export function DashboardLayout({ sx, children, data }: DashboardLayoutProps) {
             data={{
               nav: navData,
               account: _account,
-              workspaces: _workspaces,
               notifications: _notifications,
             }}
             slotsDisplay={{
               signIn: false,
-              purchase: false,
-              helpLink: false,
             }}
             slots={{
               topArea: (

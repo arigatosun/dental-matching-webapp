@@ -10,7 +10,7 @@ import { Logo } from '@/components/logo';
 import { Scrollbar } from '@/components/scrollbar';
 import { NavSectionMini, NavSectionVertical } from '@/components/nav-section';
 
-import { NavUpgrade } from '../components/nav-upgrade';
+import { NavThootChara} from '../components/nav-thoot-chara';
 import { NavToggleButton } from '../components/nav-toggle-button';
 
 // ----------------------------------------------------------------------
@@ -47,7 +47,7 @@ export function NavVertical({
       <Scrollbar fillContent>
         <NavSectionVertical data={data} sx={{ px: 2, flex: '1 1 auto' }} {...other} />
 
-        {slots?.bottomArea ?? <NavUpgrade />}
+        {slots?.bottomArea ?? <NavThootChara />}
       </Scrollbar>
     </>
   );
