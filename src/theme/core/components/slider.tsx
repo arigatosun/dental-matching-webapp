@@ -38,7 +38,7 @@ const MuiSlider: Components<Theme>['MuiSlider'] = {
       style: ({ theme }) => ({
         [`& .${sliderClasses.markActive}`]: {
           [stylesMode.dark]: {
-            backgroundColor: varAlpha(theme.vars.palette.grey['800Channel'], 0.48),
+            backgroundColor: varAlpha(theme.vars.palette.grey[800], 0.48),
           },
         },
       }),

@@ -4,4 +4,4 @@ export * from './styles';
 
 export * from './classes';
 
-export type * from './types';
+export  * from './types';
