@@ -77,24 +77,19 @@ export function createPaletteChannel(hexPalette: Record<string, string>) {
  * Color with alpha channel
  */
 export function varAlpha(color: string, opacity = 1) {
-  const unsupported =
-    color.startsWith('#') ||
-    color.startsWith('rgb') ||
-    color.startsWith('rgba') ||
-    (!color.includes('var') && color.includes('Channel'));
-
-  if (unsupported) {
-    throw new Error(
-      `[Alpha]: Unsupported color format "${color}".
-       Supported formats are:
-       - RGB channels: "0 184 217".
-       - CSS variables with "Channel" prefix: "var(--palette-common-blackChannel, #000000)".
-       Unsupported formats are:
-       - Hex: "#00B8D9".
-       - RGB: "rgb(0, 184, 217)".
-       - RGBA: "rgba(0, 184, 217, 1)".
-       `
-    );
+  if (color.startsWith('#')) {
+    // Convert hex to RGB channels
+    color = hexToRgbChannel(color);
+  } else if (color.startsWith('rgb') || color.startsWith('rgba')) {
+    // Extract RGB values from rgb/rgba format
+    const match = color.match(/(\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+      color = `${match[1]} ${match[2]} ${match[3]}`;
+    } else {
+      throw new Error(`Invalid rgb/rgba color format: ${color}`);
+    }
+  } else if (!color.includes('var') && color.includes('Channel')) {
+    throw new Error(`Invalid color format: ${color}. Use 'var(--color-nameChannel)' format for CSS variables.`);
   }
 
   return `rgba(${color} / ${opacity})`;
