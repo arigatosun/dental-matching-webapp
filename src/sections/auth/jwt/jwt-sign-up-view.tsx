@@ -99,6 +99,7 @@ export function JwtSignUpView() {
           data: {
             user_type: userType,
           },
+          emailRedirectTo: `http://localhost:3000/register/${userType}?email=${encodeURIComponent(data.email)}`
         },
       });
 
