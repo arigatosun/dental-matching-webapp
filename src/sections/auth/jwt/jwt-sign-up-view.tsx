@@ -5,13 +5,13 @@ import { paths } from '@/routes/paths';
 import { useForm } from 'react-hook-form';
 import { useRouter } from '@/routes/hooks';
 import { useState, useEffect } from 'react';
-import { signUp } from '@/auth/context/jwt';
 import { useAuthContext } from '@/auth/hooks';
 import { Iconify } from '@/components/iconify';
 import { RouterLink } from '@/routes/components';
 import { useBoolean } from '@/hooks/use-boolean';
 import { Form, Field } from '@/components/hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { supabase } from '@/utils/supabase';
 
 import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
@@ -53,15 +53,14 @@ const usePasswordValidation = (password: string) => {
 
 export function JwtSignUpView() {
   const { checkUserSession } = useAuthContext();
-
   const router = useRouter();
-
   const password = useBoolean();
-
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const defaultValues = {
-    email: 'hello@gmail.com',
+    email: '',
     password: '',
   };
 
@@ -72,25 +71,54 @@ export function JwtSignUpView() {
 
   const {
     handleSubmit,
-    formState: { isSubmitting },
     watch,
   } = methods;
 
   const watchedPassword = watch('password');
   const { validLength, hasUpperCase } = usePasswordValidation(watchedPassword);
 
-  const onSubmit = handleSubmit(async (data) => {
+  const getErrorMessage = (error: Error): string => {
+    if (error.message.includes('User already registered')) {
+      return 'このメールアドレスは既に登録されています。';
+    }
+    return '予期せぬエラーが発生しました。もう一度お試しください。';
+  };
+
+  const onSubmit = handleSubmit(async (data, event) => {
+    const userType = (event?.nativeEvent as any).submitter.name;
+    
+    setIsSubmitting(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
     try {
-      await signUp({
+      const { error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
+        options: {
+          data: {
+            user_type: userType,
+          },
+        },
       });
-      await checkUserSession?.();
-  
-      router.refresh();
+
+
+
+       if (error) throw error;
+
+      setSuccessMsg('確認メールを送信しました。メールを確認して本登録を完了してください。');
+      setTimeout(() => {
+        router.push(paths.auth.jwt.signIn);
+      }, 3000);
     } catch (error) {
-      console.error(error);
-      setErrorMsg(error instanceof Error ? error.message : error);
+      console.error('Registration error:', error);
+      if (error instanceof Error) {
+        setErrorMsg(getErrorMessage(error));
+      } else {
+        setErrorMsg('登録中にエラーが発生しました。もう一度お試しください。');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   });
 
@@ -151,11 +179,31 @@ export function JwtSignUpView() {
         color="secondary"
         size="large"
         type="submit"
+        name="clinic"
         variant="contained"
         loading={isSubmitting}
         loadingIndicator="アカウント作成中..."
       >
-        アカウント作成
+        歯科医院として登録
+      </LoadingButton>
+
+      <LoadingButton
+        fullWidth
+        color="primary"
+        size="large"
+        type="submit"
+        name="staff"
+        variant="contained"
+        loading={isSubmitting}
+        loadingIndicator="アカウント作成中..."
+        sx={{
+          color: 'white',
+          '&:hover': {
+            color: 'white',
+          },
+        }}
+      >
+        歯科スタッフとして登録
       </LoadingButton>
     </Stack>
   );
@@ -189,6 +237,12 @@ export function JwtSignUpView() {
       {!!errorMsg && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {errorMsg}
+        </Alert>
+      )}
+
+      {!!successMsg && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          {successMsg}
         </Alert>
       )}
 
