@@ -11,6 +11,8 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { BasicInfoForm } from '@/components/clinic-registration/BasicInfoForm';
+import { ProfilePhotoUploadView } from '@/sections/profile/ProfilePhotoUpload';
+import { useRouter } from 'next/navigation';
 
 const steps = ['基本情報', 'プロフィール写真登録', 'マッチング条件設定', '事前概要作成', '医院証明書提出', '利用規約・同意'];
 
@@ -47,6 +49,7 @@ interface FormData {
 
 export default function ClinicRegistration() {
   const [activeStep, setActiveStep] = useState(0);
+  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     clinicName: '',
     directorLastName: '',
@@ -94,7 +97,13 @@ export default function ClinicRegistration() {
   };
 
   const handleNext = () => {
-    setActiveStep(prevActiveStep => prevActiveStep + 1);
+    if (activeStep === steps.length - 1) {
+      // 最後のステップの場合、登録処理を行う
+      console.log(formData);
+      // ここでバックエンドへのデータ送信処理を実装する
+    } else {
+      setActiveStep(prevActiveStep => prevActiveStep + 1);
+    }
   };
 
   const handleBack = () => {
@@ -128,6 +137,12 @@ export default function ClinicRegistration() {
               handleBack={handleBack}
               activeStep={activeStep}
               steps={steps}
+            />
+          )}
+           {activeStep === 1 && (
+            <ProfilePhotoUploadView
+              handleNext={handleNext}
+              handleBack={handleBack}
             />
           )}
           {/* 他のステップのコンポーネントも同様に追加 */}

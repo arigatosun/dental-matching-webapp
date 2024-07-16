@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -9,14 +7,10 @@ import {
   Paper,
   styled,
   Container,
-  Tooltip,
-  Stepper,
-  Step,
-  StepLabel,
 } from '@mui/material';
 import { Iconify } from '@/components/iconify';
 
-type PhotoType = 'director' | 'exterior' | 'interior' | 'reception';
+type PhotoType = 'director' | 'exterior' | 'unit' | 'reception';
 
 interface PhotoUploadProps {
   type: PhotoType;
@@ -40,6 +34,7 @@ const UploadPaper = styled(Paper)(({ theme }) => ({
 
 const PhotoUpload: React.FC<PhotoUploadProps> = ({ type, title, isMain = false }) => {
   const [photo, setPhoto] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -52,14 +47,16 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ type, title, isMain = false }
     }
   };
 
-  
+  const handleClick = () => {
+    fileInputRef.current?.click();
+  };
 
   return (
     <Box>
       <Typography variant="subtitle1" gutterBottom>
         {title}
       </Typography>
-      <UploadPaper elevation={0}>
+      <UploadPaper elevation={0} onClick={handleClick}>
         {photo ? (
           <Box
             component="img"
@@ -71,35 +68,31 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ type, title, isMain = false }
           <>
             <Iconify icon="solar:cloud-upload-outline" width={48} sx={{ mb: 1 }} />
             <Typography variant="body2" color="textSecondary">
-              画像を選択
+              クリックして画像を選択
             </Typography>
           </>
         )}
-        <input
-          type="file"
-          hidden
-          accept="image/*"
-          onChange={handlePhotoUpload}
-        />
       </UploadPaper>
-     
+      <input
+        type="file"
+        hidden
+        ref={fileInputRef}
+        accept="image/*"
+        onChange={handlePhotoUpload}
+      />
     </Box>
   );
 };
 
-const steps = ['基本情報入力', 'プロフィール写真登録', 'マッチング条件設定', '支払情報登録', '審査情報登録', '利用規約・同意'];
+interface ProfilePhotoUploadViewProps {
+  handleNext: () => void;
+  handleBack: () => void;
+}
 
-export function ProfilePhotoUploadView() {
+export function ProfilePhotoUploadView({ handleNext, handleBack }: ProfilePhotoUploadViewProps) {
   return (
     <Container maxWidth="md">
       <Box sx={{ py: 4 }}>
-        <Stepper activeStep={1} alternativeLabel sx={{ mb: 4 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <Typography variant="h4" gutterBottom>
             プロフィール写真の登録
@@ -116,21 +109,18 @@ export function ProfilePhotoUploadView() {
             <PhotoUpload type="exterior" title="外観写真" />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <PhotoUpload type="interior" title="内観写真" />
+            <PhotoUpload type="unit" title="ユニット写真" />
           </Grid>
           <Grid item xs={12} sm={6}>
             <PhotoUpload type="reception" title="受付写真" />
           </Grid>
         </Grid>
-        <Typography variant="body2" color="textSecondary" sx={{ mt: 2, textAlign: 'center' }}>
-          ※推奨サイズ：横幅1280px以上、縦横比1:1の正方形
-        </Typography>
-        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center' }}>
-          <Button variant="contained" color="primary" size="large" sx={{ minWidth: 200 }}>
-            次へ進む
+        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
+          <Button onClick={handleBack} variant="outlined" size="large" sx={{ minWidth: 200 }}>
+            戻る
           </Button>
-          <Button color="inherit" sx={{ mt: 2 }}>
-            後で登録する
+          <Button onClick={handleNext} variant="contained" color="primary" size="large" sx={{ minWidth: 200,color: 'white' }}>
+            次へ
           </Button>
         </Box>
       </Box>
