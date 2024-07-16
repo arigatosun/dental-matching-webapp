@@ -1,62 +1,138 @@
 'use client';
 
-import { useState } from 'react';
-import RegistrationHandler from '@/components/auth/RegistrationHandler';
-import { supabase } from '@/utils/supabase';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { 
+  Box, 
+  Stepper, 
+  Step, 
+  StepLabel, 
+  Paper,
+  SelectChangeEvent
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { BasicInfoForm } from '@/components/clinic-registration/BasicInfoForm';
+
+const steps = ['基本情報', 'プロフィール写真登録', 'マッチング条件設定', '事前概要作成', '医院証明書提出', '利用規約・同意'];
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  margin: theme.spacing(3, 0),
+}));
+
+interface FormData {
+  clinicName: string;
+  directorLastName: string;
+  directorFirstName: string;
+  directorLastNameKana: string;
+  directorFirstNameKana: string;
+  phoneNumber: string;
+  postalCode: string;
+  prefecture: string;
+  city: string;
+  address: string;
+  buildingName: string;
+  nearestStation: string;
+  staffCount: string;
+  unitCount: string;
+  averagePatientsPerDay: string;
+  hasIntercom: string;
+  businessHoursStart: string;
+  businessHoursEnd: string;
+  recallTimeSlot: string;
+  clinicEquipment: string[];
+  staffBrings: string[];
+  appearance: string[];
+  jobDetails: string[];
+}
 
 export default function ClinicRegistration() {
-  const [email, setEmail] = useState('');
-  const [clinicName, setClinicName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
+  const [activeStep, setActiveStep] = useState(0);
+  const [formData, setFormData] = useState<FormData>({
+    clinicName: '',
+    directorLastName: '',
+    directorFirstName: '',
+    directorLastNameKana: '',
+    directorFirstNameKana: '',
+    phoneNumber: '',
+    postalCode: '',
+    prefecture: '',
+    city: '',
+    address: '',
+    buildingName: '',
+    nearestStation: '',
+    staffCount: '',
+    unitCount: '',
+    averagePatientsPerDay: '',
+    hasIntercom: '',
+    businessHoursStart: '',
+    businessHoursEnd: '',
+    recallTimeSlot: '',
+    clinicEquipment: [],
+    staffBrings: [],
+    appearance: [],
+    jobDetails: [],
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      const { data, error } = await supabase
-        .from('clinics')
-        .insert({ email, name: clinicName });
-      
-      if (error) throw error;
-
-      router.push('/dashboard'); // 登録成功後のリダイレクト先
-    } catch (error) {
-      console.error('Registration error:', error);
-      // エラーハンドリング
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
+  ) => {
+    const { name, value } = event.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
   };
 
-  // 変更: RegistrationHandlerコンポーネントにonVerified propを渡す
-  if (!email) {
-    return <RegistrationHandler onVerified={setEmail} />;
-  }
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, checked } = event.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: checked
+        ? [...(prevData[name as keyof FormData] as string[]), value]
+        : (prevData[name as keyof FormData] as string[]).filter((item: string) => item !== value)
+    }));
+  };
 
-  // 以下は変更なし
+  const handleNext = () => {
+    setActiveStep(prevActiveStep => prevActiveStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep(prevActiveStep => prevActiveStep - 1);
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    console.log(formData);
+    // ここでバックエンドへのデータ送信処理を実装する
+  };
+
   return (
-    <div>
-      <h1>歯科医院登録フォーム</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          value={email}
-          disabled
-          placeholder="メールアドレス"
-        />
-        <input
-          type="text"
-          value={clinicName}
-          onChange={(e) => setClinicName(e.target.value)}
-          placeholder="医院名"
-          required
-        />
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? '登録中...' : '登録'}
-        </button>
-      </form>
-    </div>
+    <Box sx={{ width: '100%', p: 3 }}>
+      <Stepper activeStep={activeStep} alternativeLabel>
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
+
+      <StyledPaper>
+        <form onSubmit={handleSubmit}>
+          {activeStep === 0 && (
+            <BasicInfoForm
+              formData={formData}
+              handleChange={handleChange}
+              handleCheckboxChange={handleCheckboxChange}
+              handleNext={handleNext}
+              handleBack={handleBack}
+              activeStep={activeStep}
+              steps={steps}
+            />
+          )}
+          {/* 他のステップのコンポーネントも同様に追加 */}
+        </form>
+      </StyledPaper>
+    </Box>
   );
 }
