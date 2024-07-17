@@ -7,14 +7,15 @@ import {
   Step, 
   StepLabel, 
   Paper,
-  SelectChangeEvent
+  SelectChangeEvent,
+  Typography
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { BasicInfoForm } from '@/components/clinic-registration/BasicInfoForm';
 import { ProfilePhotoUploadView } from '@/sections/profile/ProfilePhotoUpload';
 import { useRouter } from 'next/navigation';
 
-const steps = ['基本情報', 'プロフィール写真登録', 'マッチング条件設定', '事前概要作成', '医院証明書提出', '利用規約・同意'];
+const steps = ['基本情報', 'プロフィール写真登録', 'マッチング条件設定', '事前同意事項作成', '医院証明書提出', '利用規約・同意'];
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -102,7 +103,12 @@ export default function ClinicRegistration() {
       console.log(formData);
       // ここでバックエンドへのデータ送信処理を実装する
     } else {
-      setActiveStep(prevActiveStep => prevActiveStep + 1);
+      if (activeStep === 1) {
+        // プロフィール写真登録画面から次へ進む場合
+        router.push('/register/clinic/matching-conditions');
+      } else {
+        setActiveStep(prevActiveStep => prevActiveStep + 1);
+      }
     }
   };
 
@@ -116,6 +122,12 @@ export default function ClinicRegistration() {
     // ここでバックエンドへのデータ送信処理を実装する
   };
 
+  const StyledPaper = styled(Paper)(({ theme }) => ({
+    padding: theme.spacing(3),
+    marginTop: theme.spacing(0), // 上部のマージンを減らす
+  }));
+  
+
   return (
     <Box sx={{ width: '100%', p: 3 }}>
       <Stepper activeStep={activeStep} alternativeLabel>
@@ -126,6 +138,32 @@ export default function ClinicRegistration() {
         ))}
       </Stepper>
 
+      <Typography 
+      variant="h4" 
+      component="h1" 
+      gutterBottom 
+      sx={{ mb: 0, mt: 6, textAlign: 'center' }} // mb を 4 から 2 に変更
+    >
+      {activeStep === 0 ? '基本情報を入力してください' : 
+       activeStep === 1 ? 'プロフィール写真を登録してください' :
+       'ステップ情報'}
+    </Typography>
+
+    {activeStep === 1 && (
+      <Typography 
+        variant="body2" 
+        sx={{ 
+          mt: 1, 
+          textAlign: 'center', 
+          color: 'text.disabled',
+          fontStyle: 'italic'
+        }}
+      >
+        ※プロフィール写真は後から変更できます
+      </Typography>
+    )}
+
+      
       <StyledPaper>
         <form onSubmit={handleSubmit}>
           {activeStep === 0 && (

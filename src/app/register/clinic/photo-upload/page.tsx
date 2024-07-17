@@ -11,7 +11,7 @@ export default function Page() {
 
   const handleNext = () => {
     // 次のステップへ進む処理
-    // 例: router.push('/register/clinic/next-step');
+    router.push('/register/clinic/matching-conditions');// 例: router.push('/register/clinic/next-step');
   };
 
   const handleBack = () => {

@@ -14,6 +14,7 @@ import {
   FormGroup,
   FormControlLabel,
   SelectChangeEvent,
+  Paper,
 } from '@mui/material';
 
 interface BasicInfoFormProps {
@@ -66,12 +67,8 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
 
   return (
     
-    <Container maxWidth="md">
-      <Typography variant="h5" align="center" gutterBottom>
-        基本情報を入力してください
-      </Typography>
-
-      
+    <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
+      <Container maxWidth="md">
       <Typography variant="h6" gutterBottom>
         歯科医院情報
       </Typography>
@@ -511,30 +508,31 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   </FormGroup>
 </Grid>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <Button
-          onClick={handleBack}
-          sx={{ mr: 1, minWidth: '120px', minHeight: '48px' }}
-          disabled={activeStep === 0}
-          size="large"
-        >
-          戻る
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleNext}
-          sx={{ 
-            minWidth: '120px', 
-            minHeight: '48px',
-            color: 'white',
-            backgroundColor: (theme) => theme.palette.primary.main
-          }}
-          size="large"
-        >
-          {activeStep === steps.length - 1 ? '登録' : '次へ'}
-        </Button>
-      </Box>
-    </Container>
+<Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Button
+            onClick={handleBack}
+            sx={{ mr: 1, minWidth: '120px', minHeight: '48px' }}
+            disabled={activeStep === 0}
+            size="large"
+          >
+            戻る
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleNext}
+            sx={{ 
+              minWidth: '120px', 
+              minHeight: '48px',
+              color: 'white',
+              backgroundColor: (theme) => theme.palette.primary.main
+            }}
+            size="large"
+          >
+            {activeStep === steps.length - 1 ? '登録' : '次へ'}
+          </Button>
+        </Box>
+      </Container>
+    </Paper>
   );
 };

@@ -1,30 +1,17 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
-import { MatchingConditionsForm } from '@/components/matching-conditions/MatchingConditionsForm';
 import { Box, Container, Typography, Stepper, Step, StepLabel } from '@mui/material';
+import { PriorConsentForm } from '@/components/prior-consent/PriorConsentForm';
 import { Iconify } from '@/components/iconify';
 
 const steps = ['基本情報入力', 'プロフィール写真登録', 'マッチング条件設定', '事前同意事項作成', '医院証明書提出', '利用規約・同意'];
 
-export default function MatchingConditionsPage() {
-  const router = useRouter();
-
-  const handleNext = () => {
-    // 次の画面に進む処理（例: 事前概要作成ページへ）
-    router.push('/register/clinic/prior-consent');// router.push('/register/clinic/pre-summary');
-    console.log('次へ進む');
-  };
-
-  const handleBack = () => {
-    router.back(); // 前の画面に戻る
-  };
-
+export default function PriorConsentPage() {
   return (
     <Container maxWidth="md">
-      <Box sx={{ mt: 2, mb: 6 }}>
-        <Stepper activeStep={2} alternativeLabel sx={{ mb: 6 }}>
+      <Box sx={{ my: 4 }}>
+        <Stepper activeStep={3} alternativeLabel>
           {steps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
@@ -32,8 +19,8 @@ export default function MatchingConditionsPage() {
           ))}
         </Stepper>
         
-        <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4, textAlign: 'center' }}>
-          初回マッチング条件を設定しましょう
+        <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 4, mb: 2, textAlign: 'center' }}>
+          同意事項を作成しましょう
         </Typography>
         
         <Box sx={{ 
@@ -62,12 +49,11 @@ export default function MatchingConditionsPage() {
             />
           </Box>
           <Typography variant="body1" sx={{ color: 'rgb(0, 108, 156)' }}>
-            作成した条件でマッチング検索を行います。<br />
-            設定した条件の変更は登録完了後にフィルター機能で変更できるようになります。
+            同意事項は求職スタッフが医院からのオファーを受諾する前に、医院独自の同意事項について確認するものです。
+            すべて同意しないとオファーを受諾できません。
           </Typography>
         </Box>
-
-        <MatchingConditionsForm handleNext={handleNext} handleBack={handleBack} />
+        <PriorConsentForm />
       </Box>
     </Container>
   );
