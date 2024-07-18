@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { MatchingConditionsForm } from '@/components/matching-conditions/MatchingConditionsForm';
+import { MatchingConditionsForm } from '@/components/clinic-registration/matching-conditions/MatchingConditionsForm';
 import { Box, Container, Typography, Stepper, Step, StepLabel } from '@mui/material';
 import { Iconify } from '@/components/iconify';
 

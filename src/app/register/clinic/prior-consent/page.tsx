@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Box, Container, Typography, Stepper, Step, StepLabel } from '@mui/material';
-import { PriorConsentForm } from '@/components/prior-consent/PriorConsentForm';
+import { PriorConsentForm } from '@/components/clinic-registration/prior-consent/PriorConsentForm';
 import { Iconify } from '@/components/iconify';
 
 const steps = ['基本情報入力', 'プロフィール写真登録', 'マッチング条件設定', '事前同意事項作成', '医院証明書提出', '利用規約・同意'];

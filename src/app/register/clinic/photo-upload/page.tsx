@@ -1,17 +1,15 @@
 // src/app/register/clinic/photo-upload/page.tsx
 'use client';
 
-import { ProfilePhotoUploadView } from "@/sections/profile/ProfilePhotoUpload";
+import { ProfilePhotoUploadView } from "@/components/clinic-registration/profile/ProfilePhotoUpload";
 import { useRouter } from 'next/navigation';
-
-export const metadata = { title: 'プロフィール写真アップロード' };
 
 export default function Page() {
   const router = useRouter();
 
   const handleNext = () => {
     // 次のステップへ進む処理
-    router.push('/register/clinic/matching-conditions');// 例: router.push('/register/clinic/next-step');
+    router.push('/register/clinic/matching-conditions');
   };
 
   const handleBack = () => {

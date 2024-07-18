@@ -1,21 +1,25 @@
 import React from 'react';
-import { 
-  Typography, 
-  TextField, 
-  Button, 
+import {
+  Typography,
+  TextField,
+  Button,
   Grid,
   Box,
   Container,
-  Select,
-  MenuItem,
   FormControl,
   InputLabel,
+  Select,
+  MenuItem,
   Checkbox,
   FormGroup,
   FormControlLabel,
   SelectChangeEvent,
   Paper,
 } from '@mui/material';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 
 interface BasicInfoFormProps {
   formData: {
@@ -35,8 +39,8 @@ interface BasicInfoFormProps {
     unitCount: string;
     averagePatientsPerDay: string;
     hasIntercom: string;
-    businessHoursStart: string;
-    businessHoursEnd: string;
+    businessHoursStart: dayjs.Dayjs | null;
+    businessHoursEnd: dayjs.Dayjs | null;
     recallTimeSlot: string;
     clinicEquipment: string[];
     staffBrings: string[];
@@ -45,34 +49,39 @@ interface BasicInfoFormProps {
   };
   handleChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => void;
   handleCheckboxChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleTimeChange: (field: string, value: dayjs.Dayjs | null) => void;
   handleNext: () => void;
-  handleBack: () => void;
-  activeStep: number;
-  steps: string[];
 }
 
 export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   formData,
   handleChange,
   handleCheckboxChange,
+  handleTimeChange,
   handleNext,
-  handleBack,
-  activeStep,
-  steps
 }) => {
-  const handlePostalCodeSearch = () => {
-    // 郵便番号検索のロジックをここに実装
-    // API呼び出しや、都道府県、市区町村等の自動入力を行う
+  const handlePostalCodeSearch = async () => {
+    try {
+      const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${formData.postalCode}`);
+      const data = await response.json();
+      if (data.results) {
+        const address = data.results[0];
+        handleChange({ target: { name: 'prefecture', value: address.address1 } } as React.ChangeEvent<HTMLInputElement>);
+        handleChange({ target: { name: 'city', value: address.address2 + address.address3 } } as React.ChangeEvent<HTMLInputElement>);
+      }
+    } catch (error) {
+      console.error('郵便番号検索エラー:', error);
+    }
   };
 
   return (
-    
-    <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-      <Container maxWidth="md">
-      <Typography variant="h6" gutterBottom>
-        歯科医院情報
-      </Typography>
-      <Grid container spacing={2}>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
+        <Container maxWidth="md">
+          <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+            歯科医院情報
+          </Typography>
+          <Grid container spacing={2}>
         <Grid item xs={12}>
           <TextField
             fullWidth
@@ -133,38 +142,39 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             required
           />
         </Grid>
+
         <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>
-            住所情報
-          </Typography>
-        </Grid>
-        <Grid item xs={12} sm={9}>
-          <TextField
-            fullWidth
-            label="郵便番号"
-            name="postalCode"
-            value={formData.postalCode}
-            onChange={handleChange}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button 
-            variant="contained" 
-            color="primary"
-            onClick={handlePostalCodeSearch}
-            sx={{ 
-              height: '56px',
-              borderRadius: '28px',
-              color: 'white',
-              width: { xs: '100%', sm: 'auto' },
-              minWidth: '100px',
-              px: 2,
-            }}
-          >
-            検索
-          </Button>
-        </Grid>
+              <Typography variant="h6" gutterBottom sx={{ mt: 4, mb: 3 }}>
+                住所情報
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={9}>
+              <TextField
+                fullWidth
+                label="郵便番号"
+                name="postalCode"
+                value={formData.postalCode}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handlePostalCodeSearch}
+                sx={{
+                  height: '56px',
+                  borderRadius: '28px',
+                  color: 'white',
+                  width: { xs: '100%', sm: 'auto' },
+                  minWidth: '100px',
+                  px: 2,
+                }}
+              >
+                検索
+              </Button>
+            </Grid>
         <Grid item xs={12}>
           <TextField
             fullWidth
@@ -216,10 +226,10 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
 
         
         <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-            医院の詳細情報
-          </Typography>
-        </Grid>
+              <Typography variant="h6" gutterBottom sx={{ mt: 4, mb: 3 }}>
+                医院の詳細情報
+              </Typography>
+            </Grid>
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
             <InputLabel>在籍スタッフ人数</InputLabel>
@@ -282,38 +292,26 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel>営業時間（開始）</InputLabel>
-            <Select
-              name="businessHoursStart"
-              value={formData.businessHoursStart}
-              onChange={handleChange as (event: SelectChangeEvent<string>, child: React.ReactNode) => void}
-            >
-              {Array.from({ length: 24 }, (_, i) => (
-                <MenuItem key={i} value={`${i.toString().padStart(2, '0')}:00`}>
-                  {`${i.toString().padStart(2, '0')}:00`}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel>営業時間（終了）</InputLabel>
-            <Select
-              name="businessHoursEnd"
-              value={formData.businessHoursEnd}
-              onChange={handleChange as (event: SelectChangeEvent<string>, child: React.ReactNode) => void}
-            >
-              {Array.from({ length: 24 }, (_, i) => (
-                <MenuItem key={i} value={`${i.toString().padStart(2, '0')}:00`}>
-                  {`${i.toString().padStart(2, '0')}:00`}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
+
+        <Grid item xs={12} sm={5}>
+              <TimePicker
+                label="営業時間（開始）"
+                value={formData.businessHoursStart}
+                onChange={(newValue) => handleTimeChange('businessHoursStart', newValue)}
+                sx={{ width: '100%' }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography>～</Typography>
+            </Grid>
+            <Grid item xs={12} sm={5}>
+              <TimePicker
+                label="営業時間（終了）"
+                value={formData.businessHoursEnd}
+                onChange={(newValue) => handleTimeChange('businessHoursEnd', newValue)}
+                sx={{ width: '100%' }}
+              />
+            </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>
             <InputLabel>歯科衛生士のリコール時間枠</InputLabel>
@@ -332,100 +330,79 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-            医院で用意できるもの
-          </Typography>
-          <Typography variant="body2" gutterBottom color="text.secondary">
-            ※用意できるものすべてにチェックを入れてください
-          </Typography>
-          <FormGroup>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={3}>
-                <Typography variant="subtitle1">シューズ</Typography>
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('shoes-S')} onChange={handleCheckboxChange} name="clinicEquipment" value="shoes-S" />} label="S" />
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('shoes-M')} onChange={handleCheckboxChange} name="clinicEquipment" value="shoes-M" />} label="M" />
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('shoes-L')} onChange={handleCheckboxChange} name="clinicEquipment" value="shoes-L" />} label="L" />
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('shoes-2L')} onChange={handleCheckboxChange} name="clinicEquipment" value="shoes-2L" />} label="2L" />
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <Typography variant="subtitle1">スクラブ</Typography>
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('scrubs-S')} onChange={handleCheckboxChange} name="clinicEquipment" value="scrubs-S" />} label="S" />
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('scrubs-M')} onChange={handleCheckboxChange} name="clinicEquipment" value="scrubs-M" />} label="M" />
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('scrubs-L')} onChange={handleCheckboxChange} name="clinicEquipment" value="scrubs-L" />} label="L" />
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('scrubs-2L')} onChange={handleCheckboxChange} name="clinicEquipment" value="scrubs-2L" />} label="2L" />
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <Typography variant="subtitle1">パンツ</Typography>
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('pants-S')} onChange={handleCheckboxChange} name="clinicEquipment" value="pants-S" />} label="S" />
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('pants-M')} onChange={handleCheckboxChange} name="clinicEquipment" value="pants-M" />} label="M" />
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('pants-L')} onChange={handleCheckboxChange} name="clinicEquipment" value="pants-L" />} label="L" />
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('pants-2L')} onChange={handleCheckboxChange} name="clinicEquipment" value="pants-2L" />} label="2L" />
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <Typography variant="subtitle1">ゴーグル</Typography>
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('goggles-white')} onChange={handleCheckboxChange} name="clinicEquipment" value="goggles-white" />} label="白" />
-                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('goggles-black')} onChange={handleCheckboxChange} name="clinicEquipment" value="goggles-black" />} label="黒" />
-              </Grid>
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom sx={{ mt: 4, mb: 3 }}>
+                医院で用意できるもの
+              </Typography>
+              <FormGroup row>
+                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('scrubs')} onChange={handleCheckboxChange} name="clinicEquipment" value="scrubs" />} label="スクラブ" />
+                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('pants')} onChange={handleCheckboxChange} name="clinicEquipment" value="pants" />} label="パンツ" />
+                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('shoes')} onChange={handleCheckboxChange} name="clinicEquipment" value="shoes" />} label="院内シューズ" />
+                <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('goggles')} onChange={handleCheckboxChange} name="clinicEquipment" value="goggles" />} label="ゴーグル" />
+              </FormGroup>
             </Grid>
-          </FormGroup>
-        </Grid>
 
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>
-            スタッフに持参してもらうもの
-          </Typography>
-          <FormGroup>
-            <Grid container spacing={2}>
-            <Grid item xs={12} sm={3}>
-                <Typography variant="subtitle1">ゴーグル</Typography>
-                <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('goggles-white')} onChange={handleCheckboxChange} name="staffBrings" value="goggles-white" />} label="白" />
-                <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('goggles-other')} onChange={handleCheckboxChange} name="staffBrings" value="goggles-other" />} label="白以外" />
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <Typography variant="subtitle1">スクラブ</Typography>
-                <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('scrubs-white')} onChange={handleCheckboxChange} name="staffBrings" value="scrubs-white" />} label="白" />
-                <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('scrubs-other')} onChange={handleCheckboxChange} name="staffBrings" value="scrubs-other" />} label="白以外" />
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <Typography variant="subtitle1">パンツ</Typography>
-                <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('pants-white')} onChange={handleCheckboxChange} name="staffBrings" value="pants-white" />} label="白" />
-                <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('pants-other')} onChange={handleCheckboxChange} name="staffBrings" value="pants-other" />} label="白以外" />
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <Typography variant="subtitle1">院内シューズ</Typography>
-                <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('shoes-white')} onChange={handleCheckboxChange} name="staffBrings" value="shoes-white" />} label="白" />
-                <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('shoes-other')} onChange={handleCheckboxChange} name="staffBrings" value="shoes-other" />} label="白以外" />
-              </Grid>
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom sx={{ mt: 4, mb: 3 }}>
+                スタッフに持参してもらうもの
+              </Typography>
+              <FormGroup row>
+                <Grid container spacing={2}>
+                  <Grid item xs={6} sm={3}>
+                    <Typography variant="subtitle2">スクラブ</Typography>
+                    <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('scrubs-white')} onChange={handleCheckboxChange} name="staffBrings" value="scrubs-white" />} label="白" />
+                    <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('scrubs-black')} onChange={handleCheckboxChange} name="staffBrings" value="scrubs-black" />} label="黒" />
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Typography variant="subtitle2">パンツ</Typography>
+                    <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('pants-white')} onChange={handleCheckboxChange} name="staffBrings" value="pants-white" />} label="白" />
+                    <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('pants-black')} onChange={handleCheckboxChange} name="staffBrings" value="pants-black" />} label="黒" />
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Typography variant="subtitle2">院内シューズ</Typography>
+                    <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('shoes-white')} onChange={handleCheckboxChange} name="staffBrings" value="shoes-white" />} label="白" />
+                    <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('shoes-black')} onChange={handleCheckboxChange} name="staffBrings" value="shoes-black" />} label="黒" />
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Typography variant="subtitle2">ゴーグル</Typography>
+                    <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('goggles-white')} onChange={handleCheckboxChange} name="staffBrings" value="goggles-white" />} label="白" />
+                    <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('goggles-black')} onChange={handleCheckboxChange} name="staffBrings" value="goggles-black" />} label="黒" />
+                  </Grid>
+                </Grid>
+              </FormGroup>
             </Grid>
-          </FormGroup>
-        </Grid>
 
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>
-            身だしなみ
-          </Typography>
-          <FormGroup>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={2.4}>
-                <FormControlLabel control={<Checkbox checked={formData.appearance.includes('nailOk')} onChange={handleCheckboxChange} name="appearance" value="nailOk" />} label="ネイルOK" />
-              </Grid>
-              <Grid item xs={12} sm={2.4}>
-                <FormControlLabel control={<Checkbox checked={formData.appearance.includes('freeHairstyle')} onChange={handleCheckboxChange} name="appearance" value="freeHairstyle" />} label="髪型自由" />
-              </Grid>
-              <Grid item xs={12} sm={2.4}>
-                <FormControlLabel control={<Checkbox checked={formData.appearance.includes('colorContactsOk')} onChange={handleCheckboxChange} name="appearance" value="colorContactsOk" />} label="カラコンOK" />
-              </Grid>
-              <Grid item xs={12} sm={2.4}>
-                <FormControlLabel control={<Checkbox checked={formData.appearance.includes('eyelashExtensionsOk')} onChange={handleCheckboxChange} name="appearance" value="eyelashExtensionsOk" />} label="まつエクOK" />
-              </Grid>
-              <Grid item xs={12} sm={2.4}>
-                <FormControlLabel control={<Checkbox checked={formData.appearance.includes('noSmokers')} onChange={handleCheckboxChange} name="appearance" value="noSmokers" />} label="喫煙者NG" />
-              </Grid>
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom sx={{ mt: 4, mb: 3 }}>
+                身だしなみ
+              </Typography>
+              <FormGroup row>
+                <Grid container spacing={2}>
+                  <Grid item xs={6} sm={4}>
+                    <FormControlLabel control={<Checkbox checked={formData.appearance.includes('nailOk')} onChange={handleCheckboxChange} name="appearance" value="nailOk" />} label="ネイルOK" />
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <FormControlLabel control={<Checkbox checked={formData.appearance.includes('freeHairstyle')} onChange={handleCheckboxChange} name="appearance" value="freeHairstyle" />} label="髪型自由" />
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <FormControlLabel control={<Checkbox checked={formData.appearance.includes('colorContactsOk')} onChange={handleCheckboxChange} name="appearance" value="colorContactsOk" />} label="カラコンOK" />
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <FormControlLabel control={<Checkbox checked={formData.appearance.includes('eyelashExtensionsOk')} onChange={handleCheckboxChange} name="appearance" value="eyelashExtensionsOk" />} label="まつエクOK" />
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <FormControlLabel control={<Checkbox checked={formData.appearance.includes('noSmokers')} onChange={handleCheckboxChange} name="appearance" value="noSmokers" />} label="喫煙者NG" />
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <FormControlLabel control={<Checkbox checked={formData.appearance.includes('noAccessories')} onChange={handleCheckboxChange} name="appearance" value="noAccessories" />} label="アクセサリーNG" />
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <FormControlLabel control={<Checkbox checked={formData.appearance.includes('noBrightHair')} onChange={handleCheckboxChange} name="appearance" value="noBrightHair" />} label="過度に明るい髪NG" />
+                  </Grid>
+                </Grid>
+              </FormGroup>
             </Grid>
-          </FormGroup>
-        </Grid>
-      </Grid>
+          </Grid>
       <Grid item xs={12}>
   <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
     依頼する仕事内容
@@ -508,31 +485,23 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   </FormGroup>
 </Grid>
 
-<Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Button
-            onClick={handleBack}
-            sx={{ mr: 1, minWidth: '120px', minHeight: '48px' }}
-            disabled={activeStep === 0}
-            size="large"
-          >
-            戻る
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleNext}
-            sx={{ 
-              minWidth: '120px', 
-              minHeight: '48px',
-              color: 'white',
-              backgroundColor: (theme) => theme.palette.primary.main
-            }}
-            size="large"
-          >
-            {activeStep === steps.length - 1 ? '登録' : '次へ'}
-          </Button>
-        </Box>
-      </Container>
-    </Paper>
+<Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleNext}
+              sx={{
+                minWidth: '200px',
+                minHeight: '56px',
+                color: 'white',
+                fontSize: '1.1rem',
+              }}
+            >
+              次へ
+            </Button>
+          </Box>
+        </Container>
+      </Paper>
+    </LocalizationProvider>
   );
 };
