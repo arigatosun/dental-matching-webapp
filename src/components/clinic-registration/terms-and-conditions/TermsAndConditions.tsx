@@ -5,7 +5,6 @@ import {
   Box,
   Typography,
   Paper,
-  Container,
   Checkbox,
   FormControlLabel,
   Button,
@@ -14,9 +13,19 @@ import {
   ListItemIcon,
   Link,
   Divider,
+  styled,
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { Iconify } from '@/components/iconify';
+
+const StyledListItem = styled(ListItem)(({ theme }) => ({
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  paddingBottom: theme.spacing(3),
+  '&:last-child': {
+    paddingBottom: 0,
+  },
+}));
 
 const termsAndConditions = [
   {
@@ -44,93 +53,103 @@ export function TermsAndConditionsForm() {
   const handleSubmit = () => {
     if (agreed) {
       console.log('利用規約に同意しました');
-      // ここで登録処理を実行
-      router.push('/register/clinic/completed'); // 登録後のリダイレクト先
+      router.push('/register/clinic/completed');
     }
   };
 
   return (
-    <Container maxWidth="md">
-      <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-        <Typography variant="h5" align="center" gutterBottom sx={{ mb: 4 }}>
-          最後にご確認ください
-        </Typography>
 
-        <List>
-          {termsAndConditions.map((term, index) => (
-            <React.Fragment key={index}>
-              <ListItem alignItems="flex-start" sx={{ flexDirection: 'column', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-                  <ListItemIcon sx={{ minWidth: 40 }}>
-                    <Iconify icon="mdi:check-circle" sx={{ color: '#0051A2', fontSize: 24 }} />
-                  </ListItemIcon>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                    {term.title}
-                  </Typography>
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ pl: 5 }}>
-                  {term.content}
+    
+    <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+      <Typography 
+        variant="h5" 
+        align="center" 
+        gutterBottom 
+        sx={{ 
+          mb: 3, 
+          fontWeight: 'bold', 
+          color: 'primary.main',
+          textDecoration: 'underline',
+          textDecorationColor: 'primary.main',
+        }}
+      >
+        Thoot ご利用にあたっての利用規約
+      </Typography>
+
+      <List>
+        {termsAndConditions.map((term, index) => (
+          <React.Fragment key={index}>
+            <StyledListItem>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1 }}>
+                <ListItemIcon sx={{ minWidth: 40, mt: 0.5 }}>
+                  <Iconify icon="mdi:check-circle" sx={{ color: 'primary.main', fontSize: 24 }} />
+                </ListItemIcon>
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  {term.title}
                 </Typography>
-              </ListItem>
-              {index < termsAndConditions.length - 1 && (
-                <Divider variant="inset" component="li" sx={{ my: 3 }} />
-              )}
-            </React.Fragment>
-          ))}
-          <ListItem sx={{ flexDirection: 'column', alignItems: 'flex-start', mt: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-              <ListItemIcon sx={{ minWidth: 40}}>
-                <Iconify icon="mdi:check-circle" sx={{ color: '#0051A2', fontSize: 24 }} />
-              </ListItemIcon>
-              <Typography variant="body2" color="text.secondary">
-                <Link href="/terms-of-service" target="_blank" rel="noopener">
-                  利用規約
-                </Link>
-                もご確認いただき、すべてに同意した場合のみ下記にチェックしてください
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ pl: 5 }}>
+                {term.content}
               </Typography>
-            </Box>
-          </ListItem>
-        </List>
+            </StyledListItem>
+            {index < termsAndConditions.length - 1 && (
+              <Divider variant="inset" component="li" sx={{ my: 2 }} />
+            )}
+          </React.Fragment>
+        ))}
+      </List>
 
-        <Box sx={{ mt: 4, textAlign: 'center' }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={agreed}
-                onChange={handleAgreeChange}
-                color="primary"
-              />
-            }
-            label={
-              <Typography variant="h6">
-                この内容についてすべて同意する
-              </Typography>
-            }
-          />
-        </Box>
+      <Box sx={{ mt: 4, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary" sx={{ pl: 5 }}>
+          こちらの
+          <Link href="/terms-of-service" target="_blank" rel="noopener">
+            利用規約
+          </Link>
+          もご確認いただき、すべてに同意した場合のみ
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ pl: 5 }}>
+          下記にチェックしてください
+        </Typography>
+      </Box>
 
-        <Box sx={{ mt: 6, display: 'flex', justifyContent: 'center' }}>
-          <Button
-            variant="contained"
-            color="primary"
-            size="large"
-            onClick={handleSubmit}
-            disabled={!agreed}
-            sx={{ 
-              minWidth: 300,
-              height: 56,
-              fontSize: '1.2rem',
-              fontWeight: 'bold',
-              color: 'white',
-              '&:hover': {
-                backgroundColor: 'primary.dark',
-              },
-            }}
-          >
-            登録を完了する
-          </Button>
-        </Box>
-      </Paper>
-    </Container>
+      <Box sx={{ mt: 4, textAlign: 'center' }}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={agreed}
+              onChange={handleAgreeChange}
+              color="primary"
+            />
+          }
+          label={
+            <Typography variant="h6">
+              この内容についてすべて同意する
+            </Typography>
+          }
+        />
+      </Box>
+
+      <Box sx={{ mt: 6, display: 'flex', justifyContent: 'center' }}>
+        <Button
+          variant="contained"
+          color="primary"
+          size="large"
+          onClick={handleSubmit}
+          disabled={!agreed}
+          sx={{ 
+            minWidth: 300,
+            height: 56,
+            fontSize: '1.2rem',
+            fontWeight: 'bold',
+            color: 'white',
+            '&:hover': {
+              backgroundColor: 'primary.dark',
+            },
+          }}
+        >
+          登録を完了する
+        </Button>
+      </Box>
+    </Paper>
   );
 }

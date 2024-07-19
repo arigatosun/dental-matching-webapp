@@ -8,12 +8,17 @@ import {
   Paper,
   Container,
   styled,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Fade,
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { Iconify } from '@/components/iconify';
 
 const UploadBox = styled(Box)(({ theme }) => ({
-  height: 200,
+  height: 300,
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -24,9 +29,17 @@ const UploadBox = styled(Box)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
   '&:hover': {
     borderColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.action.hover,
   },
   overflow: 'hidden',
+  transition: 'all 0.3s ease-in-out',
 }));
+
+const requiredDocuments = [
+  '保険医療機関指定通知書',
+  '診療所開設届け',
+  '診療所開設許可証',
+];
 
 export function MedicalInstitutionCertificationForm() {
   const [certificateFile, setCertificateFile] = useState<File | null>(null);
@@ -63,86 +76,141 @@ export function MedicalInstitutionCertificationForm() {
 
   const handleLater = () => {
     // 後で提出する処理をここに実装
-    // 例: 一時保存してから次の画面に遷移
     console.log('Submitting later');
     router.push('/register/clinic/terms-conditions');
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="body1" gutterBottom>
-          医療機関証明書類
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          ◯ 保険医療機関指定通知書<br />
-          ◯ 診療所開設届け<br />
-          ◯ 診療所開設許可証
-        </Typography>
-      </Box>
-
-      <form onSubmit={handleSubmit}>
-        <UploadBox onClick={handleClick}>
-          {previewUrl ? (
-            <Box
-              component="img"
-              src={previewUrl}
-              alt="Uploaded certificate"
-              sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-              }}
-            />
-          ) : (
-            <>
-              <Iconify icon="solar:cloud-upload-outline" width={48} sx={{ mb: 1 }} />
-              <Typography variant="body2" color="textSecondary">
-                クリックして画像を選択
+    <Container maxWidth="md">
+      <Paper elevation={3} sx={{ p: 6, mt: 4, borderRadius: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+          <Box sx={{ width: '45%' }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+              必要書類
+              <Typography component="span" variant="caption" sx={{ ml: 1, fontWeight: 'normal' }}>
+                （いずれか1点）
               </Typography>
-            </>
+            </Typography>
+            <List>
+              {requiredDocuments.map((doc, index) => (
+                <ListItem key={index} disablePadding sx={{ mb: 1 }}>
+                  <ListItemIcon>
+                    <Iconify icon="mdi:file-document-outline" sx={{ color: 'primary.main' }} />
+                  </ListItemIcon>
+                  <ListItemText primary={doc} />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+         
+        </Box>
+
+        <form onSubmit={handleSubmit}>
+        <Box sx={{ position: 'relative', height: 300, mb: 4 }}>
+          <Fade in={!previewUrl}>
+            <UploadBox onClick={handleClick}>
+              <Iconify icon="solar:cloud-upload-outline" width={64} sx={{ mb: 2, color: 'primary.main' }} />
+              <Typography variant="h6" color="textSecondary">
+                クリックして画像をアップロード
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                または画像をここにドラッグ＆ドロップ
+              </Typography>
+            </UploadBox>
+          </Fade>
+          {previewUrl && (
+            <Fade in={Boolean(previewUrl)}>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  '&:hover': { '& > .overlay': { opacity: 1 } },
+                }}
+              >
+                <Box
+                  component="img"
+                  src={previewUrl}
+                  alt="Uploaded certificate"
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                />
+                <Box
+                  className="overlay"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: 0,
+                    transition: 'opacity 0.3s',
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    onClick={handleClick}
+                    startIcon={<Iconify icon="mdi:refresh" />}
+                  >
+                    画像を変更
+                  </Button>
+                </Box>
+              </Box>
+            </Fade>
           )}
-        </UploadBox>
+        </Box>
         <input
           type="file"
           hidden
           ref={fileInputRef}
-          accept="image/*"
+          accept="image/*,.pdf"
           onChange={handleFileUpload}
         />
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, gap: 2 }}>
-          <Button
-            variant="outlined"
-            size="large"
-            onClick={handleLater}
-            sx={{ 
-              minWidth: '140px',
-              color: 'text.secondary',
-              borderColor: 'text.secondary',
-              '&:hover': {
-                borderColor: 'text.primary',
-                color: 'text.primary',
-              },
-            }}
-          >
-            後で提出する
-          </Button>
-          <Button 
-            type="submit" 
-            variant="contained" 
-            color="primary" 
-            size="large"
-            sx={{ 
-              minWidth: '140px',
-              color: 'white',
-            }}
-          >
-            次へ
-          </Button>
-        </Box>
-      </form>
-    </Paper>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6, gap: 2 }}>
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={handleLater}
+              sx={{ 
+                minWidth: '140px',
+                color: 'text.secondary',
+                borderColor: 'text.secondary',
+                '&:hover': {
+                  borderColor: 'text.primary',
+                  color: 'text.primary',
+                },
+              }}
+            >
+              後で提出する
+            </Button>
+            <Button 
+              type="submit" 
+              variant="contained" 
+              color="primary" 
+              size="large"
+              disabled={!certificateFile}
+              sx={{ 
+                minWidth: '140px',
+                color: 'white',
+              }}
+            >
+              次へ
+            </Button>
+          </Box>
+        </form>
+      </Paper>
+    </Container>
   );
 }

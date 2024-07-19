@@ -12,7 +12,6 @@ export default function BasicInfoFormWrapper() {
   const handleNext = (data: any) => {
     console.log('Submitted data:', data);
     router.push('/register/staff/preference-experience');
-    // ここで次のページへの遷移ロジックを実装
   };
 
   return (
@@ -29,12 +28,6 @@ export default function BasicInfoFormWrapper() {
         <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 4, mb: 2, textAlign: 'center' }}>
           歯科スタッフ登録
         </Typography>
-        
-        <Box sx={{ bgcolor: 'info.light', p: 2, borderRadius: 1, mb: 4 }}>
-          <Typography variant="body1">
-            <strong>ⓘ</strong> 基本情報を入力してください。これらの情報は後から変更することができます。
-          </Typography>
-        </Box>
 
         <BasicInfoForm onNext={handleNext} />
       </Box>
