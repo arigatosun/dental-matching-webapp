@@ -25,13 +25,14 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(3),
-  marginBottom: theme.spacing(2),
+  marginBottom: theme.spacing(0),
   fontWeight: 'bold',
 }));
 
 interface BasicInfoFormProps {
   onNext: (data: any) => void;
 }
+
 
 export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onNext }) => {
   const [formData, setFormData] = useState({
@@ -153,47 +154,62 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onNext }) => {
               onChange={handleChange}
             />
           </Grid>
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" gutterBottom>電話番号（半角数字）</Typography>
-            <Grid container spacing={1}>
-              <Grid item xs={3}>
-                <TextField
-                  fullWidth
-                  name="phoneNumber1"
-                  value={formData.phoneNumber1}
-                  onChange={handleChange}
-                  inputProps={{ maxLength: 3, inputMode: 'numeric', pattern: '[0-9]*' }}
-                  required
-                />
-              </Grid>
-              <Grid item xs={1} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                -
-              </Grid>
-              <Grid item xs={3}>
-                <TextField
-                  fullWidth
-                  name="phoneNumber2"
-                  value={formData.phoneNumber2}
-                  onChange={handleChange}
-                  inputProps={{ maxLength: 4, inputMode: 'numeric', pattern: '[0-9]*' }}
-                  required
-                />
-              </Grid>
-              <Grid item xs={1} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                -
-              </Grid>
-              <Grid item xs={3}>
-                <TextField
-                  fullWidth
-                  name="phoneNumber3"
-                  value={formData.phoneNumber3}
-                  onChange={handleChange}
-                  inputProps={{ maxLength: 4, inputMode: 'numeric', pattern: '[0-9]*' }}
-                  required
-                />
-              </Grid>
-            </Grid>
-          </Grid>
+
+          <Grid item xs={12} >
+  <SectionTitle variant="h6"sx={{ mb: 2}}>
+    電話番号
+    <Typography 
+      component="span" 
+      variant="body2" 
+      sx={{ 
+        ml: 1, 
+        color: 'text.secondary', 
+        fontWeight: 'normal' 
+      }}
+    >
+      (半角数字で入力してください)
+    </Typography>
+  </SectionTitle>
+  <Grid container spacing={1} alignItems="center">
+    <Grid item xs={2}>
+      <TextField
+        fullWidth
+        name="phoneNumber1"
+        value={formData.phoneNumber1}
+        onChange={handleChange}
+        inputProps={{ maxLength: 3, inputMode: 'numeric', pattern: '[0-9]*' }}
+        required
+      />
+    </Grid>
+    <Grid item xs="auto" sx={{ px: 0.5 }}>
+      -
+    </Grid>
+    <Grid item xs={2}>
+      <TextField
+        fullWidth
+        name="phoneNumber2"
+        value={formData.phoneNumber2}
+        onChange={handleChange}
+        inputProps={{ maxLength: 4, inputMode: 'numeric', pattern: '[0-9]*' }}
+        required
+      />
+    </Grid>
+    <Grid item xs="auto" sx={{ px: 0.5 }}>
+      -
+    </Grid>
+    <Grid item xs={2}>
+      <TextField
+        fullWidth
+        name="phoneNumber3"
+        value={formData.phoneNumber3}
+        onChange={handleChange}
+        inputProps={{ maxLength: 4, inputMode: 'numeric', pattern: '[0-9]*' }}
+        required
+      />
+    </Grid>
+  </Grid>
+</Grid>
+
 
           <Grid item xs={12}>
             <SectionTitle variant="h6">住所情報</SectionTitle>
@@ -311,49 +327,73 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onNext }) => {
 </Grid>
 
 <Grid item xs={12}>
-          <SectionTitle variant="h6">希望条件</SectionTitle>
-        </Grid>
-        <Grid item xs={12}>
-          <FormControl component="fieldset">
-            <FormLabel component="legend">希望職種</FormLabel>
-            <RadioGroup
-              row
-              name="desiredProfession"
-              value={formData.desiredProfession}
-              onChange={handleChange}
-            >
-              <FormControlLabel value="歯科衛生士" control={<Radio />} label="歯科衛生士" />
-              <FormControlLabel value="歯科助手" control={<Radio />} label="歯科助手" />
-              <FormControlLabel value="歯科技工士" control={<Radio />} label="歯科技工士" />
-              <FormControlLabel value="歯科学生" control={<Radio />} label="歯科学生" />
-            </RadioGroup>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12}>
-          <Typography gutterBottom>希望時給</Typography>
-          <Slider
-            value={[formData.minHourlyRate, formData.maxHourlyRate]}
-            onChange={handleSliderChange}
-            valueLabelDisplay="auto"
-            min={1000}
-            max={5000}
-            step={100}
-            marks={[
-              { value: 1000, label: '¥1000' },
-              { value: 5000, label: '¥5000' },
-            ]}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="希望勤務地"
-            name="desiredWorkLocation"
-            value={formData.desiredWorkLocation}
-            onChange={handleChange}
-            placeholder="○○県○○市○○町"
-          />
-        </Grid>
+  <SectionTitle variant="h6" sx={{ mb: 2 }}>希望条件</SectionTitle>
+</Grid>
+<Grid item xs={12}>
+  <FormControl component="fieldset" fullWidth>
+    <FormLabel component="legend" sx={{ mb: 1 }}>希望職種</FormLabel>
+    <RadioGroup
+      row
+      name="desiredProfession"
+      value={formData.desiredProfession}
+      onChange={handleChange}
+      sx={{ justifyContent: 'space-between' }}
+    >
+      {['歯科衛生士', '歯科助手', '歯科技工士', '歯科学生'].map((profession) => (
+        <FormControlLabel
+          key={profession}
+          value={profession}
+          control={<Radio />}
+          label={profession}
+          sx={{ 
+            flexGrow: 1, 
+            flexBasis: '22%', 
+            marginRight: 0,
+            '& .MuiFormControlLabel-label': { 
+              fontSize: '0.9rem',
+              whiteSpace: 'nowrap'
+            }
+          }}
+        />
+      ))}
+    </RadioGroup>
+  </FormControl>
+</Grid>
+<Grid item xs={12} sx={{ mt: 4, mb: 4 }}> {/* 希望時給の下マージンを増やす */}
+  <FormControl component="fieldset" fullWidth>
+    <FormLabel component="legend" sx={{ mt: 1, mb: 4 }}>希望時給</FormLabel >
+    <Box sx={{ width: '80%', mx: 'auto', mt: 2, mb: 1 }}>
+      <Slider
+        value={[formData.minHourlyRate, formData.maxHourlyRate]}
+        onChange={handleSliderChange}
+        valueLabelDisplay="on"
+        min={1000}
+        max={5000}
+        step={100}
+        marks={[
+          { value: 1000, label: '¥1000' },
+          { value: 5000, label: '¥5000' },
+        ]}
+        valueLabelFormat={(value) => `${value}円`}
+      />
+    </Box>
+    <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 0 }}>
+      スライダーを動かして希望時給の範囲を設定してください
+    </Typography>
+  </FormControl>
+</Grid>
+<Grid item xs={12} sx={{ mt: 2, mb: 3 }}>
+  <FormLabel component="legend">希望勤務地</FormLabel>
+  <TextField
+    fullWidth
+    name="desiredWorkLocation"
+    value={formData.desiredWorkLocation}
+    onChange={handleChange}
+    placeholder="○○県○○市○○町"
+    sx={{ mt: 1 }}
+  />
+</Grid>
+        
 
 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
   <Button

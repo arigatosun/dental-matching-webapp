@@ -16,7 +16,7 @@ export default function BasicInfoFormWrapper() {
 
   return (
     <Container maxWidth="md">
-      <Box sx={{ my: 4 }}>
+      <Box sx={{ mt: 0, mb: 4 }}> {/* ここを変更: my: 4 から mt: 2, mb: 4 に */}
         <Stepper activeStep={0} alternativeLabel>
           {steps.map((label) => (
             <Step key={label}>
@@ -24,13 +24,13 @@ export default function BasicInfoFormWrapper() {
             </Step>
           ))}
         </Stepper>
-        
-        <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 4, mb: 2, textAlign: 'center' }}>
-          歯科スタッフ登録
-        </Typography>
-
-        <BasicInfoForm onNext={handleNext} />
       </Box>
+      
+      <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 6, mb: 4, textAlign: 'center' }}> {/* ここを変更: mt: 4, mb: 2 から mt: 6, mb: 4 に */}
+        基本情報を入力してください
+      </Typography>
+
+      <BasicInfoForm onNext={handleNext} />
     </Container>
   );
 }
