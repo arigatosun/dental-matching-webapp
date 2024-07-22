@@ -7,7 +7,7 @@ const PreferencesExperienceWrapper = dynamic(
 );
 
 export const metadata: Metadata = {
-  title: '希望条件・経歴入力 | 歯科スタッフ登録',
+  title: 'スキルと経歴情報入力 | 歯科スタッフ登録',
 };
 
 export default function PreferencesExperiencePage() {

@@ -56,9 +56,6 @@ export const TermsAgreementForm: React.FC<TermsAgreementFormProps> = ({ onComple
   return (
     <Container maxWidth="md">
       <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-        <Typography variant="h5" align="center" gutterBottom sx={{ mb: 4 }}>
-          最後にご確認ください
-        </Typography>
 
         <List>
           {termsAndConditions.map((term, index) => (

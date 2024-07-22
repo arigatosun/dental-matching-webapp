@@ -5,7 +5,8 @@ import { Box, Container, Typography, Stepper, Step, StepLabel } from '@mui/mater
 import { BasicInfoForm } from '@/components/staff-registration/basic-info/BasicInfoForm';
 import { useRouter } from 'next/navigation';
 
-const steps = ['基本情報入力', '希望条件・経歴入力', 'プロフィール写真の登録', '本人確認書類の提出', '国家資格免許の提出', '利用規約・同意'];
+const steps = ['基本情報入力', 'スキル・経歴入力', 'プロフィール写真登録', '本人確認・免許の提出', '利用規約・同意'];
+
 
 export default function BasicInfoFormWrapper() {
   const router = useRouter();

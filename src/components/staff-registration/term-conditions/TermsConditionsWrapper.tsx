@@ -19,7 +19,7 @@ export default function TermsConditionsWrapper() {
 
   return (
     <Container maxWidth="md">
-      <Box sx={{ my: 4 }}>
+       <Box sx={{ mt: 0, mb: 4 }}>
         <Stepper activeStep={5} alternativeLabel>
           {steps.map((label) => (
             <Step key={label}>
@@ -29,14 +29,10 @@ export default function TermsConditionsWrapper() {
         </Stepper>
         
         <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 4, mb: 2, textAlign: 'center' }}>
-          利用規約・同意
+          最後にご確認ください
         </Typography>
         
-        <Box sx={{ bgcolor: 'info.light', p: 2, borderRadius: 1, mb: 4 }}>
-          <Typography variant="body1">
-            <strong>ⓘ</strong> 以下の利用規約をよくお読みいただき、同意いただける場合はチェックボックスにチェックを入れてください。
-          </Typography>
-        </Box>
+      
 
         <TermsAgreementForm onComplete={handleComplete} />
       </Box>

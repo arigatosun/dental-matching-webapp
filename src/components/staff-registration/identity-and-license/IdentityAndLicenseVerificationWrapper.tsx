@@ -2,24 +2,23 @@
 
 import React from 'react';
 import { Box, Container, Typography, Stepper, Step, StepLabel } from '@mui/material';
-import { PreferencesExperienceForm } from '@/components/staff-registration/preference-experience/PreferencesExperienceForm';
+import { IdentityAndLicenseVerificationForm } from './IdentityAndLicenseVerificationForm';
 import { useRouter } from 'next/navigation';
 
 const steps = ['基本情報入力', 'スキル・経歴入力', 'プロフィール写真登録', '本人確認・免許の提出', '利用規約・同意'];
 
-export default function PreferencesExperienceWrapper() {
-  const router = useRouter();
+export default function IdentityAndLicenseVerificationWrapper() {
+    const router = useRouter();
   
-  const handleNext = (data: any) => {
-    console.log('Submitted data:', data);
-    // ここでデータをデータベースに送信する処理を追加できます
-    router.push('/register/staff/profile-upload');
-  };
+    const handleNext = (data: any) => {
+      console.log('Submitted data:', data);
+      router.push('/register/staff/terms-conditions');
+    };
 
   return (
     <Container maxWidth="md">
        <Box sx={{ mt: 0, mb: 4 }}>
-        <Stepper activeStep={1} alternativeLabel>
+        <Stepper activeStep={3} alternativeLabel>
           {steps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
@@ -28,10 +27,10 @@ export default function PreferencesExperienceWrapper() {
         </Stepper>
         
         <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 4, mb: 2, textAlign: 'center' }}>
-          スキルと経歴情報入力
+          本人確認書類・資格免許の提出
         </Typography>
 
-        <PreferencesExperienceForm onNext={handleNext} />
+        <IdentityAndLicenseVerificationForm onNext={handleNext} />
       </Box>
     </Container>
   );

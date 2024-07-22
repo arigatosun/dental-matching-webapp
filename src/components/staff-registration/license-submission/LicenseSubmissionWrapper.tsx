@@ -17,7 +17,7 @@ export default function LicenseSubmissionWrapper() {
 
   return (
     <Container maxWidth="md">
-      <Box sx={{ my: 4 }}>
+       <Box sx={{ mt: 0, mb: 4 }}>
         <Stepper activeStep={4} alternativeLabel>
           {steps.map((label) => (
             <Step key={label}>
