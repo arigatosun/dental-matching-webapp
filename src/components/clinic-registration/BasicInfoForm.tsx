@@ -1,3 +1,5 @@
+// components.clinic-registration.BasicInfoForm.tsx
+
 import React from 'react';
 import {
   Typography,
@@ -334,6 +336,9 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               <Typography variant="h6" gutterBottom sx={{ mt: 4, mb: 3 }}>
                 医院で用意できるもの
               </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                ※すべてのサイズを用意できる場合のみチェックを入れてください。一部のサイズしか用意できない場合は、チェックを入れずに「スタッフに持参してもらうもの」で必要な持ち物を指定してください。
+              </Typography>
               <FormGroup row>
                 <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('scrubs')} onChange={handleCheckboxChange} name="clinicEquipment" value="scrubs" />} label="スクラブ" />
                 <FormControlLabel control={<Checkbox checked={formData.clinicEquipment.includes('pants')} onChange={handleCheckboxChange} name="clinicEquipment" value="pants" />} label="パンツ" />
@@ -351,7 +356,7 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                   <Grid item xs={6} sm={3}>
                     <Typography variant="subtitle2">スクラブ</Typography>
                     <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('scrubs-white')} onChange={handleCheckboxChange} name="staffBrings" value="scrubs-white" />} label="白" />
-                    <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('scrubs-black')} onChange={handleCheckboxChange} name="staffBrings" value="scrubs-black" />} label="黒" />
+                    <FormControlLabel control={<Checkbox checked={formData.staffBrings.includes('scrubs-other')} onChange={handleCheckboxChange} name="staffBrings" value="scrubs-other" />} label="白以外" />
                   </Grid>
                   <Grid item xs={6} sm={3}>
                     <Typography variant="subtitle2">パンツ</Typography>

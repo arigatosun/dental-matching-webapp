@@ -1,6 +1,7 @@
 'use client';
 
 import axios, { endpoints } from '@/utils/axios';
+import { supabase } from '@/utils/supabase';
 
 import { setSession } from './utils';
 import { STORAGE_KEY } from './constant';
@@ -72,6 +73,10 @@ export const signUp = async ({
  *************************************** */
 export const signOut = async (): Promise<void> => {
   try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      throw error;
+    }
     await setSession(null);
   } catch (error) {
     console.error('Error during sign out:', error);
