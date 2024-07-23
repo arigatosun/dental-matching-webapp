@@ -64,7 +64,6 @@ export function JwtSignInView() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      console.log('Attempting login with:', data.email);
       const { data: signInData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
@@ -77,7 +76,10 @@ export function JwtSignInView() {
       console.log('User session checked');
 
       // ユーザーのメタデータを取得
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
       if (userError) throw userError;
 
@@ -87,9 +89,7 @@ export function JwtSignInView() {
 
       // ユーザータイプに基づいてリダイレクト
       const userType = user.user_metadata.user_type;
-      const redirectPath = userType === 'clinic' 
-        ? '/dashboard/clinic' 
-        : '/dashboard/staff';
+      const redirectPath = userType === 'clinic' ? '/dashboard/clinic' : '/dashboard/staff';
 
       router.push(redirectPath);
     } catch (error) {
@@ -121,17 +121,12 @@ export function JwtSignInView() {
   const renderForm = (
     <Stack spacing={3}>
       <Field.Text name="email" label="メールアドレス" InputLabelProps={{ shrink: true }} />
-  
+
       <Stack spacing={1.5}>
-        <Link
-          component={RouterLink}
-          href="#"
-          variant="body2"
-          sx={{ alignSelf: 'flex-end' }}
-        >
+        <Link component={RouterLink} href="#" variant="body2" sx={{ alignSelf: 'flex-end' }}>
           パスワードを忘れた場合
         </Link>
-  
+
         <Field.Text
           name="password"
           label="パスワード"
@@ -149,7 +144,7 @@ export function JwtSignInView() {
           }}
         />
       </Stack>
-  
+
       <LoadingButton
         fullWidth
         color="secondary"
