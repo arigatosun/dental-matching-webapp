@@ -6,5 +6,5 @@ import { BlankView } from '@/sections/blank/view';
 export const metadata = { title: `Dashboard - ${CONFIG.site.name}` };
 
 export default function Page() {
-  return <BlankView title="トップページ" />;
+  return <BlankView title="歯科医トップページ" />;
 }
