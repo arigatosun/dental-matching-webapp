@@ -1,3 +1,5 @@
+import { Session } from '@supabase/supabase-js';
+
 export type UserType = Record<string, any> | null;
 
 export type AuthState = {
@@ -10,5 +12,5 @@ export type AuthContextValue = {
   loading: boolean;
   authenticated: boolean;
   unauthenticated: boolean;
-  checkUserSession?: () => Promise<void>;
+  checkUserSession: () => Promise<Session | null>;
 };

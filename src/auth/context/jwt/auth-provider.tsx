@@ -4,7 +4,8 @@ import { useEffect, useCallback, useMemo } from 'react';
 import { useSetState } from '@/hooks/use-set-state';
 import { AuthContext } from '../auth-context';
 import { supabase } from '@/utils/supabase';
-import type { AuthState } from '../../types';
+import type { AuthState, AuthContextValue } from '../../types';
+import { Session } from '@supabase/supabase-js';
 
 type Props = {
   children: React.ReactNode;
@@ -16,7 +17,7 @@ export function AuthProvider({ children }: Props) {
     loading: true,
   });
 
-  const checkUserSession = useCallback(async () => {
+  const checkUserSession = useCallback(async (): Promise<Session | null> => {
     try {
       const {
         data: { session },
@@ -26,12 +27,15 @@ export function AuthProvider({ children }: Props) {
           data: { user },
         } = await supabase.auth.getUser();
         setState({ user, loading: false });
+        return session;
       } else {
         setState({ user: null, loading: false });
+        return null;
       }
     } catch (error) {
       console.error('Error checking user session:', error);
       setState({ user: null, loading: false });
+      return null;
     }
   }, [setState]);
 
@@ -41,7 +45,7 @@ export function AuthProvider({ children }: Props) {
 
   const status = state.loading ? 'loading' : state.user ? 'authenticated' : 'unauthenticated';
 
-  const memoizedValue = useMemo(
+  const memoizedValue: AuthContextValue = useMemo(
     () => ({
       user: state.user,
       checkUserSession,

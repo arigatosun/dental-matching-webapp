@@ -1,5 +1,3 @@
-// app/register/clinic/page.tsx
-
 'use client';
 
 import React, { useState } from 'react';
@@ -16,69 +14,69 @@ import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
-// 登録プロセスのステップを定義
+import { getDevelopmentUser } from '@/utils/auth-helper';
+
 const steps = ['基本情報', 'プロフィール写真登録', 'マッチング条件設定', '事前同意事項作成', '医院証明書提出', '利用規約・同意'];
 
-// フォームデータの型定義
-interface FormData {
-  clinicName: string;
-  directorLastName: string;
-  directorFirstName: string;
-  directorLastNameKana: string;
-  directorFirstNameKana: string;
-  phoneNumber: string;
-  postalCode: string;
+export interface ClinicBasicInfo {
+  clinic_name: string;
+  director_last_name: string;
+  director_first_name: string;
+  director_last_name_kana: string;
+  director_first_name_kana: string;
+  phone_number: string;
+  postal_code: string;
   prefecture: string;
   city: string;
   address: string;
-  buildingName: string;
-  nearestStation: string;
-  staffCount: string;
-  unitCount: string;
-  averagePatientsPerDay: string;
-  hasIntercom: string;
-  businessHoursStart: dayjs.Dayjs | null;
-  businessHoursEnd: dayjs.Dayjs | null;
-  recallTimeSlot: string;
-  clinicEquipment: string[];
-  staffBrings: string[];
+  building_name: string;
+  nearest_station: string;
+  staff_count: string;
+  unit_count: string;
+  average_patients_per_day: string;
+  has_intercom: string;
+  business_hours_start: dayjs.Dayjs | null;
+  business_hours_end: dayjs.Dayjs | null;
+  recall_time_slot: string;
+  clinic_introduction: string;
+  clinic_equipment: string[];
+  staff_brings: string[];
   appearance: string[];
-  jobDetails: string[];
+  job_details: string[];
 }
 
 export default function ClinicRegistration() {
-  // 現在のステップを管理するstate
   const [activeStep, setActiveStep] = useState(0);
   const router = useRouter();
+  const supabase = createClientComponentClient();
 
-  // フォームデータを管理するstate
-  const [formData, setFormData] = useState<FormData>({
-    clinicName: '',
-    directorLastName: '',
-    directorFirstName: '',
-    directorLastNameKana: '',
-    directorFirstNameKana: '',
-    phoneNumber: '',
-    postalCode: '',
+  const [formData, setFormData] = useState<ClinicBasicInfo>({
+    clinic_name: '',
+    director_last_name: '',
+    director_first_name: '',
+    director_last_name_kana: '',
+    director_first_name_kana: '',
+    phone_number: '',
+    postal_code: '',
     prefecture: '',
     city: '',
     address: '',
-    buildingName: '',
-    nearestStation: '',
-    staffCount: '',
-    unitCount: '',
-    averagePatientsPerDay: '',
-    hasIntercom: '',
-    businessHoursStart: null,
-    businessHoursEnd: null,
-    recallTimeSlot: '',
-    clinicEquipment: [],
-    staffBrings: [],
+    building_name: '',
+    nearest_station: '',
+    staff_count: '',
+    unit_count: '',
+    average_patients_per_day: '',
+    has_intercom: '',
+    business_hours_start: null,
+    business_hours_end: null,
+    recall_time_slot: '',
+    clinic_introduction: '',
+    clinic_equipment: [],
+    staff_brings: [],
     appearance: [],
-    jobDetails: [],
+    job_details: [],
   });
 
-  // テキストフィールドの変更を処理する関数
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
   ) => {
@@ -89,18 +87,16 @@ export default function ClinicRegistration() {
     }));
   };
 
-  // チェックボックスの変更を処理する関数
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = event.target;
     setFormData(prevData => ({
       ...prevData,
       [name]: checked
-        ? [...(prevData[name as keyof FormData] as string[]), value]
-        : (prevData[name as keyof FormData] as string[]).filter((item: string) => item !== value)
+        ? [...(prevData[name as keyof ClinicBasicInfo] as string[] || []), value]
+        : (prevData[name as keyof ClinicBasicInfo] as string[] || []).filter((item: string) => item !== value)
     }));
   };
 
-  // 時間ピッカーの変更を処理する関数
   const handleTimeChange = (field: string, value: dayjs.Dayjs | null) => {
     setFormData(prevData => ({
       ...prevData,
@@ -108,58 +104,44 @@ export default function ClinicRegistration() {
     }));
   };
 
-  const supabase = createClientComponentClient();
-
-  // 「次へ」ボタンのクリックを処理する関数
-const handleNext = async () => {
-  // 最終ステップかどうかを確認
-  if (activeStep === steps.length - 1) {
-    // 最終ステップの場合、データをデータベースに送信
+  const handleNext = async () => {
     try {
-      // 現在のユーザー情報を取得
-      const { data: { user } } = await supabase.auth.getUser();
+      let user;
+      if (process.env.NODE_ENV === 'development') {
+        user = await getDevelopmentUser();
+      } else {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        user = authUser;
+      }
+
       if (!user) throw new Error('User not found');
 
-      // クリニック情報をデータベースに挿入または更新
       const { data, error } = await supabase
-        .from('clinics')
+        .from('clinic_basic_info')
         .upsert({
-          user_id: user.id, // ユーザーIDを関連付け
-          ...formData, // フォームデータをスプレッド
-          // 営業時間をISO文字列形式に変換
-          business_hours_start: formData.businessHoursStart?.toISOString(),
-          business_hours_end: formData.businessHoursEnd?.toISOString(),
+          user_id: user.id,
+          ...formData,
+          business_hours_start: formData.business_hours_start?.toISOString(),
+          business_hours_end: formData.business_hours_end?.toISOString(),
         })
-        .select(); // 挿入/更新されたデータを取得
+        .select();
 
-      // エラーチェック
       if (error) throw error;
 
       console.log('Data saved successfully', data);
       
-      // 登録完了ページへ遷移
-      router.push('/register/clinic/completed');
+      router.push('/register/clinic/photo-upload');
     } catch (error) {
       console.error('Error saving data:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+      }
       // TODO: エラー処理を追加（例：エラーメッセージの表示）
     }
-  } else {
-    // 最終ステップでない場合
-    if (activeStep === 0) {
-      // 基本情報入力画面（最初のステップ）の場合
-      // プロフィール写真アップロードページへ遷移
-      router.push('/register/clinic/photo-upload');
-    } else {
-      // その他のステップの場合
-      // 次のステップに進む
-      setActiveStep(prevActiveStep => prevActiveStep + 1);
-    }
-  }
-};
+  };
 
   return (
     <Box sx={{ width: '100%', p: 3 }}>
-      {/* ステッパーを表示 */}
       <Stepper activeStep={activeStep} alternativeLabel>
         {steps.map((label) => (
           <Step key={label}>
@@ -168,7 +150,6 @@ const handleNext = async () => {
         ))}
       </Stepper>
 
-      {/* ページタイトルを表示 */}
       <Typography 
         variant="h4" 
         component="h1" 
@@ -178,7 +159,6 @@ const handleNext = async () => {
         基本情報を入力してください
       </Typography>
 
-      {/* 基本情報フォームを表示 */}
       <BasicInfoForm
         formData={formData}
         handleChange={handleChange}
