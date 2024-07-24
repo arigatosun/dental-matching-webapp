@@ -108,7 +108,7 @@ export default function ClinicRegistration() {
     try {
       let user;
       if (process.env.NODE_ENV === 'development') {
-        user = await getDevelopmentUser();
+        user = await getDevelopmentUser('clinic');
       } else {
         const { data: { user: authUser } } = await supabase.auth.getUser();
         user = authUser;

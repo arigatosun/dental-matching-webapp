@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useRef } from 'react';
 import {
   Box,
@@ -22,6 +20,8 @@ import {
   CardMedia,
 } from '@mui/material';
 import { Iconify } from '@/components/iconify';
+import { getSupabase } from '@/utils/supabase-client';
+import { getDevelopmentUser } from '@/utils/auth-helper';
 
 type PhotoType = 'director' | 'exterior' | 'unit' | 'reception';
 
@@ -29,6 +29,7 @@ interface PhotoUploadProps {
   type: PhotoType;
   title: string;
   isMain?: boolean;
+  onUpload: (url: string) => void;
 }
 
 const UploadBox = styled(Box)(({ theme }) => ({
@@ -51,18 +52,40 @@ const UploadBox = styled(Box)(({ theme }) => ({
 
 const steps = ['基本情報入力', 'プロフィール写真登録', 'マッチング条件設定', '事前同意事項作成', '医院証明書提出', '利用規約・同意'];
 
-const PhotoUpload: React.FC<PhotoUploadProps> = ({ type, title, isMain = false }) => {
+const PhotoUpload: React.FC<PhotoUploadProps> = ({ type, title, isMain = false, onUpload }) => {
   const [photo, setPhoto] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhoto(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setUploading(true);
+      try {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPhoto(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+
+        const supabase = getSupabase();
+        const { data, error } = await supabase.storage
+          .from('clinic-photos')
+          .upload(`${type}-${Date.now()}.jpg`, file);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('clinic-photos')
+          .getPublicUrl(data.path);
+
+        onUpload(publicUrl);
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        // エラーハンドリングを追加（例：ユーザーに通知する）
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
@@ -154,9 +177,52 @@ interface ProfilePhotoUploadViewProps {
 
 export function ProfilePhotoUploadView({ handleNext, handleSkip }: ProfilePhotoUploadViewProps) {
   const [openPopup, setOpenPopup] = useState(false);
+  const [photos, setPhotos] = useState({
+    director: '',
+    exterior: '',
+    unit: '',
+    reception: '',
+  });
+  const [uploading, setUploading] = useState(false);
 
   const handleOpenPopup = () => setOpenPopup(true);
   const handleClosePopup = () => setOpenPopup(false);
+
+  const handlePhotoUpload = (type: PhotoType) => (url: string) => {
+    setPhotos(prev => ({ ...prev, [type]: url }));
+  };
+
+  const handleSubmit = async () => {
+    setUploading(true);
+    try {
+      const user = await getDevelopmentUser('clinic');
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from('clinic_photos')
+        .upsert({
+          user_id: user.id,
+          director_photo_url: photos.director,
+          exterior_photo_url: photos.exterior,
+          unit_photo_url: photos.unit,
+          reception_photo_url: photos.reception,
+        })
+        .select();
+
+      if (error) throw error;
+
+      console.log('Photos saved successfully:', data);
+      handleNext();
+    } catch (error) {
+      console.error('Error saving photos:', error);
+      // エラーハンドリングを追加（例：ユーザーに通知する）
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const photoSamples = [
     { src: '/images/profile-sample/directer.jpg', title: '院長写真', description: '笑顔で親しみやすい印象を与える写真を選びましょう。' },
@@ -194,24 +260,24 @@ export function ProfilePhotoUploadView({ handleNext, handleSkip }: ProfilePhotoU
       <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>
-            <PhotoUpload type="director" title="院長写真" isMain />
+            <PhotoUpload type="director" title="院長写真" isMain onUpload={handlePhotoUpload('director')} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <PhotoUpload type="exterior" title="外観写真" />
+            <PhotoUpload type="exterior" title="外観写真" onUpload={handlePhotoUpload('exterior')} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <PhotoUpload type="unit" title="ユニット写真" />
+            <PhotoUpload type="unit" title="ユニット写真" onUpload={handlePhotoUpload('unit')} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <PhotoUpload type="reception" title="受付写真" />
+            <PhotoUpload type="reception" title="受付写真" onUpload={handlePhotoUpload('reception')} />
           </Grid>
         </Grid>
         <Box sx={{ mt: 8, display: 'flex', justifyContent: 'center', gap: 2 }}>
-          <Button onClick={handleSkip} variant="outlined" size="large" sx={{ minWidth: 200 }}>
+          <Button onClick={handleSkip} variant="outlined" size="large" sx={{ minWidth: 200 }} disabled={uploading}>
             後で登録する
           </Button>
-          <Button onClick={handleNext} variant="contained" color="primary" size="large" sx={{ minWidth: 200, color: 'white' }}>
-            次へ
+          <Button onClick={handleSubmit} variant="contained" color="primary" size="large" sx={{ minWidth: 200, color: 'white' }} disabled={uploading}>
+            {uploading ? 'アップロード中...' : '保存して次へ'}
           </Button>
         </Box>
       </Paper>
