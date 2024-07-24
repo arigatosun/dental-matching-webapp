@@ -1,24 +1,31 @@
+// app/register/clinic/matching-conditions/page.tsx
+
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MatchingConditionsForm } from '@/components/clinic-registration/matching-conditions/MatchingConditionsForm';
-import { Box, Container, Typography, Stepper, Step, StepLabel } from '@mui/material';
+import { Box, Container, Typography, Stepper, Step, StepLabel, Snackbar } from '@mui/material';
 import { Iconify } from '@/components/iconify';
 
 const steps = ['基本情報入力', 'プロフィール写真登録', 'マッチング条件設定', '事前同意事項作成', '医院証明書提出', '利用規約・同意'];
 
 export default function MatchingConditionsPage() {
   const router = useRouter();
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const handleNext = () => {
-    // 次の画面に進む処理（例: 事前概要作成ページへ）
-    router.push('/register/clinic/prior-consent');// router.push('/register/clinic/pre-summary');
-    console.log('次へ進む');
+    router.push('/register/clinic/prior-consent');
   };
 
   const handleBack = () => {
-    router.back(); // 前の画面に戻る
+    router.back();
+  };
+
+  const handleError = (message: string) => {
+    setSnackbarMessage(message);
+    setOpenSnackbar(true);
   };
 
   return (
@@ -67,8 +74,18 @@ export default function MatchingConditionsPage() {
           </Typography>
         </Box>
 
-        <MatchingConditionsForm handleNext={handleNext} handleBack={handleBack} />
+        <MatchingConditionsForm 
+          handleNext={handleNext} 
+          handleBack={handleBack} 
+        />
       </Box>
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setOpenSnackbar(false)}
+        message={snackbarMessage}
+      />
     </Container>
   );
 }

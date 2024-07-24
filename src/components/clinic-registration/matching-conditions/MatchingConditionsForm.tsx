@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { getSupabase } from '@/utils/supabase-client';
+import { getDevelopmentUser } from '@/utils/auth-helper';
 import {
   Box,
   TextField,
@@ -23,7 +25,6 @@ interface FormData {
   hourlyRateMax: string;
   recruitmentStartDate: string;
   recruitmentEndDate: string;
-  workDays: string[];
   requiredSkills: string[];
   workStartTime: string;
   workEndTime: string;
@@ -42,7 +43,6 @@ export function MatchingConditionsForm({ handleNext, handleBack }: MatchingCondi
     hourlyRateMax: '',
     recruitmentStartDate: '',
     recruitmentEndDate: '',
-    workDays: [],
     requiredSkills: [],
     workStartTime: '',
     workEndTime: '',
@@ -84,10 +84,41 @@ export function MatchingConditionsForm({ handleNext, handleBack }: MatchingCondi
     '器具洗浄等、片付け、裏仕事',
   ];
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(formData);
-    handleNext(); // フォーム送信後に次へ進む
+    
+    try {
+      const supabase = getSupabase();
+      const user = await getDevelopmentUser('clinic');
+
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      const { data, error } = await supabase
+        .from('matching_preferences')
+        .insert({
+          user_id: user.id,
+          desired_profession: [formData.desiredProfession],
+          hourly_rate_min: parseInt(formData.hourlyRateMin),
+          hourly_rate_max: parseInt(formData.hourlyRateMax),
+          recruitment_start_date: formData.recruitmentStartDate,
+          recruitment_end_date: formData.recruitmentEndDate,
+          required_skills: formData.requiredSkills,
+          work_start_time: formData.workStartTime,
+          work_end_time: formData.workEndTime,
+          experience_years: formData.experienceYears,
+        })
+        .single();
+
+      if (error) throw error;
+
+      console.log('Matching preferences saved:', data);
+      handleNext();
+    } catch (error) {
+      console.error('Error saving matching preferences:', error);
+      // エラーハンドリング（ここでSnackbarを表示するなど）
+    }
   };
 
   return (
@@ -112,7 +143,7 @@ export function MatchingConditionsForm({ handleNext, handleBack }: MatchingCondi
             </FormControl>
           </Grid>
 
-          <Grid item xs={12}>
+                    <Grid item xs={12}>
             <Typography variant="h6" gutterBottom>時給</Typography>
             <Box display="flex" alignItems="center" gap={2}>
               <TextField
@@ -139,6 +170,9 @@ export function MatchingConditionsForm({ handleNext, handleBack }: MatchingCondi
                 sx={{ width: '45%' }}
               />
             </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              ※時給は100円単位で設定してください。
+            </Typography>
           </Grid>
 
           <Grid item xs={12}>
@@ -164,27 +198,6 @@ export function MatchingConditionsForm({ handleNext, handleBack }: MatchingCondi
                 sx={{ width: '45%' }}
               />
             </Box>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="h6" gutterBottom>募集曜日</Typography>
-            <FormGroup row>
-              {['月曜', '火曜', '水曜', '木曜', '金曜', '土曜', '日曜'].map((day) => (
-                <FormControlLabel
-                  key={day}
-                  control={
-                    <Checkbox
-                      checked={formData.workDays.includes(day)}
-                      onChange={handleCheckboxChange}
-                      name="workDays"
-                      value={day}
-                    />
-                  }
-                  label={day}
-                  sx={{ flex: 1, my: 1 }}
-                />
-              ))}
-            </FormGroup>
           </Grid>
 
           <Grid item xs={12}>

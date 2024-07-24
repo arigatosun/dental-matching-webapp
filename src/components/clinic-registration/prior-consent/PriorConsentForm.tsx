@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { getSupabase } from '@/utils/supabase-client';
+import { getDevelopmentUser } from '@/utils/auth-helper';
 import {
   Box,
   TextField,
@@ -25,11 +27,12 @@ interface ConsentItem {
 interface PriorConsentFormProps {
   handleNext: () => void;
   handleSkip: () => void;
+  handleError: (message: string) => void;  // 追加
 }
 
 const steps = ['基本情報入力', 'プロフィール写真登録', 'マッチング条件設定', '事前同意事項作成', '医院証明書提出', '利用規約・同意'];
 
-export function PriorConsentForm({ handleNext, handleSkip }: PriorConsentFormProps) {
+export function PriorConsentForm({ handleNext, handleSkip, handleError  }: PriorConsentFormProps) {
   const [consentItems, setConsentItems] = useState<ConsentItem[]>([
     { id: 1, text: '白色の院内シューズをもってきてください。' },
     { id: 2, text: '事前説明を行うので勤務開始時間の10分前には到着してください。' },
@@ -49,12 +52,38 @@ export function PriorConsentForm({ handleNext, handleSkip }: PriorConsentFormPro
     setConsentItems(consentItems.filter(item => item.id !== id));
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(consentItems);
-    handleNext();
-  };
+    
+    try {
+      const supabase = getSupabase();
+      const user = await getDevelopmentUser('clinic');
 
+      if (!user) {
+        throw new Error('Failed to authenticate user');
+      }
+
+      const { data, error } = await supabase
+        .from('prior_consent_items')
+        .insert({
+          user_id: user.id,
+          consent_items: consentItems.map(item => item.text)
+        })
+        .single();
+
+      if (error) throw error;
+
+      console.log('Prior consent items saved:', data);
+      handleNext();
+    } catch (error) {
+      console.error('Error saving prior consent items:', error);
+      if (error instanceof Error) {
+        handleError(error.message);
+      } else {
+        handleError('An unknown error occurred');
+      }
+    }
+  };
   return (
     <Container maxWidth="md">
       <Stepper activeStep={3} alternativeLabel sx={{ mt: 0, mb: 4 }}>
