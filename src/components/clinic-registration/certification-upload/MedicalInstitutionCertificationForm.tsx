@@ -13,9 +13,12 @@ import {
   ListItemIcon,
   ListItemText,
   Fade,
+  Snackbar,
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { Iconify } from '@/components/iconify';
+import { getSupabase } from '@/utils/supabase-client';
+import { getDevelopmentUser } from '@/utils/auth-helper';
 
 const UploadBox = styled(Box)(({ theme }) => ({
   height: 300,
@@ -41,9 +44,15 @@ const requiredDocuments = [
   '診療所開設許可証',
 ];
 
-export function MedicalInstitutionCertificationForm() {
+interface MedicalInstitutionCertificationFormProps {
+  onNext: () => void;
+  onError: (message: string) => void;
+}
+
+export function MedicalInstitutionCertificationForm({ onNext, onError }: MedicalInstitutionCertificationFormProps) {
   const [certificateFile, setCertificateFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -56,7 +65,7 @@ export function MedicalInstitutionCertificationForm() {
         setPreviewUrl(reader.result as string);
       };
       reader.readAsDataURL(file);
-      console.log('File uploaded:', file.name);
+      console.log('File selected:', file.name);
     }
   };
 
@@ -64,20 +73,53 @@ export function MedicalInstitutionCertificationForm() {
     fileInputRef.current?.click();
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (certificateFile) {
-      console.log('Submitting file:', certificateFile.name);
-      // ここでバックエンドへのファイル送信処理を実装する
+      setUploading(true);
+      try {
+        const user = await getDevelopmentUser('clinic');
+        if (!user) {
+          throw new Error('User not found');
+        }
+
+        const supabase = getSupabase();
+        const fileExt = certificateFile.name.split('.').pop();
+        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+
+        const { data, error } = await supabase.storage
+          .from('clinic-certifications')
+          .upload(fileName, certificateFile);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('clinic-certifications')
+          .getPublicUrl(data.path);
+
+        const { error: insertError } = await supabase
+          .from('clinic_certifications')
+          .insert({
+            user_id: user.id,
+            certification_url: publicUrl,
+          });
+
+        if (insertError) throw insertError;
+
+        console.log('Certificate uploaded successfully');
+        onNext();
+      } catch (error) {
+        console.error('Error uploading certificate:', error);
+        onError('証明書のアップロードに失敗しました。もう一度お試しください。');
+      } finally {
+        setUploading(false);
+      }
     }
-    // 送信後、次の画面（利用規約・同意）に遷移
-    router.push('/register/clinic/terms-conditions');
   };
 
   const handleLater = () => {
-    // 後で提出する処理をここに実装
     console.log('Submitting later');
-    router.push('/register/clinic/terms-conditions');
+    onNext();
   };
 
   return (
@@ -102,81 +144,80 @@ export function MedicalInstitutionCertificationForm() {
               ))}
             </List>
           </Box>
-         
         </Box>
 
         <form onSubmit={handleSubmit}>
-        <Box sx={{ position: 'relative', height: 300, mb: 4 }}>
-          <Fade in={!previewUrl}>
-            <UploadBox onClick={handleClick}>
-              <Iconify icon="solar:cloud-upload-outline" width={64} sx={{ mb: 2, color: 'primary.main' }} />
-              <Typography variant="h6" color="textSecondary">
-                クリックして画像をアップロード
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                または画像をここにドラッグ＆ドロップ
-              </Typography>
-            </UploadBox>
-          </Fade>
-          {previewUrl && (
-            <Fade in={Boolean(previewUrl)}>
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                  '&:hover': { '& > .overlay': { opacity: 1 } },
-                }}
-              >
+          <Box sx={{ position: 'relative', height: 300, mb: 4 }}>
+            <Fade in={!previewUrl}>
+              <UploadBox onClick={handleClick}>
+                <Iconify icon="solar:cloud-upload-outline" width={64} sx={{ mb: 2, color: 'primary.main' }} />
+                <Typography variant="h6" color="textSecondary">
+                  クリックして画像をアップロード
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  または画像をここにドラッグ＆ドロップ
+                </Typography>
+              </UploadBox>
+            </Fade>
+            {previewUrl && (
+              <Fade in={Boolean(previewUrl)}>
                 <Box
-                  component="img"
-                  src={previewUrl}
-                  alt="Uploaded certificate"
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
-                />
-                <Box
-                  className="overlay"
                   sx={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: 0,
-                    transition: 'opacity 0.3s',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    '&:hover': { '& > .overlay': { opacity: 1 } },
                   }}
                 >
-                  <Button
-                    variant="contained"
-                    onClick={handleClick}
-                    startIcon={<Iconify icon="mdi:refresh" />}
+                  <Box
+                    component="img"
+                    src={previewUrl}
+                    alt="Uploaded certificate"
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                  <Box
+                    className="overlay"
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: 0,
+                      transition: 'opacity 0.3s',
+                    }}
                   >
-                    画像を変更
-                  </Button>
+                    <Button
+                      variant="contained"
+                      onClick={handleClick}
+                      startIcon={<Iconify icon="mdi:refresh" />}
+                    >
+                      画像を変更
+                    </Button>
+                  </Box>
                 </Box>
-              </Box>
-            </Fade>
-          )}
-        </Box>
-        <input
-          type="file"
-          hidden
-          ref={fileInputRef}
-          accept="image/*,.pdf"
-          onChange={handleFileUpload}
-        />
+              </Fade>
+            )}
+          </Box>
+          <input
+            type="file"
+            hidden
+            ref={fileInputRef}
+            accept="image/*,.pdf"
+            onChange={handleFileUpload}
+          />
 
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6, gap: 2 }}>
             <Button
@@ -200,13 +241,13 @@ export function MedicalInstitutionCertificationForm() {
               variant="contained" 
               color="primary" 
               size="large"
-              disabled={!certificateFile}
+              disabled={!certificateFile || uploading}
               sx={{ 
                 minWidth: '140px',
                 color: 'white',
               }}
             >
-              次へ
+              {uploading ? 'アップロード中...' : '次へ'}
             </Button>
           </Box>
         </form>

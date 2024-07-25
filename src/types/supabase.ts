@@ -9,6 +9,35 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      clinic_certifications: {
+        Row: {
+          id: string
+          user_id: string
+          certification_url: string
+          uploaded_at: string
+          verified: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          certification_url: string
+          uploaded_at?: string
+          verified?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          certification_url?: string
+          uploaded_at?: string
+          verified?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
       prior_consent_items: {
         Row: {
           id: string
