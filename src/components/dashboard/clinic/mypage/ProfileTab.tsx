@@ -1,4 +1,5 @@
 // src/components/dashboard/clinic/ProfileTab.tsx
+'use client';
 import React, { useState, useRef } from 'react';
 import {
   Grid,
