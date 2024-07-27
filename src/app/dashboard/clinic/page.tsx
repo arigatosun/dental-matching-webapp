@@ -1,6 +1,6 @@
 import { CONFIG } from '@/config-global';
-import { BlankView } from '@/sections/blank/view';
 import MatchingFilter from '@/components/dashboard/clinic/MatchingFilter';
+import StaffList from '@/components/dashboard/clinic/matching/StaffList';
 import { Box, Typography } from '@mui/material';
 
 export const metadata = {
@@ -13,7 +13,10 @@ export default function Page() {
       <Box sx={{ mb: 4 }}>
         <MatchingFilter />
       </Box>
-      <BlankView title="マッチング結果の一覧表示" />
+      <Typography variant="h4" sx={{ mb: 3 }}>
+        マッチング結果の一覧表示
+      </Typography>
+      <StaffList />
     </Box>
   );
 }

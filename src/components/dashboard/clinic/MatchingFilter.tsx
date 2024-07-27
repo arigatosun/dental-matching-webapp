@@ -15,6 +15,7 @@ import {
   Box,
   SelectChangeEvent,
   TextField,
+  Button,
 } from '@mui/material';
 
 const skillOptions: Record<string, string[]> = {
@@ -62,7 +63,9 @@ const MatchingFilter: React.FC = () => {
   const [profession, setProfession] = useState<string>('歯科衛生士');
   const [date, setDate] = useState<string>('');
   const [skills, setSkills] = useState<string[]>([]);
+  const [tempSkills, setTempSkills] = useState<string[]>([]);
   const [experience, setExperience] = useState<string>('1年以上');
+  const [isSkillMenuOpen, setIsSkillMenuOpen] = useState(false);
 
   const handleProfessionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setProfession(event.target.value);
@@ -72,23 +75,28 @@ const MatchingFilter: React.FC = () => {
     setDate(event.target.value);
   };
 
-  const handleSkillChange = (event: SelectChangeEvent<string[]>) => {
-    const value = event.target.value as string[];
-    setSkills(value);
+  const handleSkillChange = (event: SelectChangeEvent<typeof tempSkills>) => {
+    const value = event.target.value;
+    setTempSkills(typeof value === 'string' ? value.split(',') : value);
+  };
+
+  const handleSkillMenuOpen = () => {
+    setIsSkillMenuOpen(true);
+    setTempSkills(skills);
+  };
+
+  const handleSkillMenuClose = () => {
+    setIsSkillMenuOpen(false);
+  };
+
+  const handleSkillComplete = () => {
+    setSkills(tempSkills);
+    handleSkillMenuClose();
   };
 
   const handleExperienceChange = (event: SelectChangeEvent<string>) => {
     setExperience(event.target.value);
   };
-
- // const handleApplyFilter = () => {
-   // console.log({
-     // profession,
-      //date,
-      //skills,
-      //experience,
-    //});
-  //};
 
   return (
     <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
@@ -137,21 +145,37 @@ const MatchingFilter: React.FC = () => {
           <FormControl fullWidth>
             <Select
               multiple
-              value={skills}
+              value={tempSkills}
               onChange={handleSkillChange}
+              onOpen={handleSkillMenuOpen}
+              onClose={handleSkillMenuClose}
               renderValue={(selected) => (selected as string[]).join(', ')}
+              open={isSkillMenuOpen}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 48 * 4.5 + 8,
+                    width: 250,
+                  },
+                },
+              }}
             >
               {Object.entries(skillOptions).map(([category, options]) => (
                 <Box key={category}>
                   <MenuItem disabled>{category}</MenuItem>
                   {options.map((option) => (
                     <MenuItem key={option} value={option}>
-                      <Checkbox checked={skills.indexOf(option) > -1} />
+                      <Checkbox checked={tempSkills.indexOf(option) > -1} />
                       {option}
                     </MenuItem>
                   ))}
                 </Box>
               ))}
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button onClick={handleSkillComplete} color="primary">
+                  完了
+                </Button>
+              </Box>
             </Select>
           </FormControl>
         </Grid>
