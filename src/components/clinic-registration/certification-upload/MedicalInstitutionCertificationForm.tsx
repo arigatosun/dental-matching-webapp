@@ -41,7 +41,7 @@ const UploadBox = styled(Box)(({ theme }) => ({
 const requiredDocuments = [
   '保険医療機関指定通知書',
   '診療所開設届け',
-  '診療所開設許可証',
+  '診療所開設届出済証',
 ];
 
 interface MedicalInstitutionCertificationFormProps {
@@ -125,25 +125,24 @@ export function MedicalInstitutionCertificationForm({ onNext, onError }: Medical
   return (
     <Container maxWidth="md">
       <Paper elevation={3} sx={{ p: 6, mt: 4, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <Box sx={{ width: '45%' }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-              必要書類
-              <Typography component="span" variant="caption" sx={{ ml: 1, fontWeight: 'normal' }}>
-                （いずれか1点）
-              </Typography>
-            </Typography>
-            <List>
-              {requiredDocuments.map((doc, index) => (
-                <ListItem key={index} disablePadding sx={{ mb: 1 }}>
-                  <ListItemIcon>
-                    <Iconify icon="mdi:file-document-outline" sx={{ color: 'primary.main' }} />
-                  </ListItemIcon>
-                  <ListItemText primary={doc} />
-                </ListItem>
-              ))}
-            </List>
-          </Box>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+            必要書類
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+            （以下のいずれか1点。開設者、施設の名称、住所が確認できるもの）
+          </Typography>
+          <List>
+            {requiredDocuments.map((doc, index) => (
+              <ListItem key={index} disablePadding sx={{ mb: 1 }}>
+                <ListItemIcon>
+                  <Iconify icon="mdi:file-document-outline" sx={{ color: 'primary.main' }} />
+                </ListItemIcon>
+                <ListItemText primary={doc} />
+              </ListItem>
+            ))}
+          </List>
+          
         </Box>
 
         <form onSubmit={handleSubmit}>
