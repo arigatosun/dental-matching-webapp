@@ -43,6 +43,8 @@ export interface ClinicBasicInfo {
   staff_brings: string[];
   appearance: string[];
   job_details: string[];
+  website_url: string;
+  walking_time_from_station: string;
 }
 
 export default function ClinicRegistration() {
@@ -75,6 +77,8 @@ export default function ClinicRegistration() {
     staff_brings: [],
     appearance: [],
     job_details: [],
+    website_url: '',
+    walking_time_from_station: '',
   });
 
   const handleChange = (
@@ -108,23 +112,24 @@ export default function ClinicRegistration() {
     try {
       let user;
       if (process.env.NODE_ENV === 'development') {
-        user = await getDevelopmentUser('clinic');
+        user = await getDevelopmentUser('clinic'); // 'clinic' を指定
       } else {
         const { data: { user: authUser } } = await supabase.auth.getUser();
         user = authUser;
       }
-
+  
       if (!user) throw new Error('User not found');
 
       const { data, error } = await supabase
-        .from('clinic_basic_info')
-        .upsert({
-          user_id: user.id,
-          ...formData,
-          business_hours_start: formData.business_hours_start?.toISOString(),
-          business_hours_end: formData.business_hours_end?.toISOString(),
-        })
-        .select();
+      .from('clinic_basic_info')
+      .upsert({
+        user_id: user.id,
+        ...formData,
+        business_hours_start: formData.business_hours_start?.toISOString(),
+        business_hours_end: formData.business_hours_end?.toISOString(),
+        walking_time_from_station: parseInt(formData.walking_time_from_station),
+      })
+      .select();
 
       if (error) throw error;
 

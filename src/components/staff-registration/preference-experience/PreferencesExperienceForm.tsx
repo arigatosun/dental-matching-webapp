@@ -20,10 +20,12 @@ import {
   Popover,
   Chip
 } from '@mui/material';
+import { Iconify } from '@/components/iconify';
+import { getSupabase } from '@/utils/supabase-client';
+import { getDevelopmentUser } from '@/utils/auth-helper';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { Iconify } from '@/components/iconify';
 import dayjs from 'dayjs';
 
 const StyledAddButton = styled(Button)(({ theme }) => ({
@@ -177,10 +179,137 @@ export const PreferencesExperienceForm: React.FC<PreferencesExperienceFormProps>
     setFormData({ ...formData, education: { ...formData.education, [field]: value } });
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log('Form Data:', formData);
-    onNext(formData);
+    try {
+      const user = await getDevelopmentUser('staff');
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const supabase = getSupabase();
+
+      // staff_skills テーブルにデータを挿入
+      const { error: skillsError } = await supabase
+        .from('staff_skills')
+        .upsert({
+          user_id: user.id,
+          srp_light_moderate: formData.skills.srp.includes('軽度ー中程度'),
+          srp_moderate_severe: formData.skills.srp.includes('中度ー重度'),
+          maintenance_child_15min: formData.skills.maintenance.includes('子供15分'),
+          maintenance_30min: formData.skills.maintenance.includes('30分'),
+          maintenance_45min: formData.skills.maintenance.includes('45分'),
+          maintenance_60min: formData.skills.maintenance.includes('60分'),
+          scaling: formData.skills.dentalCare.includes('スケーリング'),
+          pmtc: formData.skills.dentalCare.includes('PMTC'),
+          air_flow: formData.skills.dentalCare.includes('エアーフロー'),
+          probing_1_4_points: formData.skills.dentalCare.includes('ブローピング1点、4点法'),
+          probing_6_points: formData.skills.dentalCare.includes('ブローピング6点法'),
+          whitening: formData.skills.dentalCare.includes('ホワイトニング'),
+          tbi: formData.skills.dentalCare.includes('TBI(フッ化物等の説明)'),
+        });
+
+      if (skillsError) throw skillsError;
+
+      // staff_auxiliary_skills テーブルにデータを挿入
+      const { error: auxSkillsError } = await supabase
+        .from('staff_auxiliary_skills')
+        .upsert({
+          user_id: user.id,
+          impression_taking: formData.skills.assistantSkills.includes('印象採得'),
+          optical_impression: formData.skills.assistantSkills.includes('光合採得'),
+          alginate_stone_casting: formData.skills.assistantSkills.includes('アルジネート練和、石膏流し'),
+          night_guard_creation: formData.skills.assistantSkills.includes('ナイトガード作成'),
+          vacuum_operation: formData.skills.assistantSkills.includes('ある程度のバキューム等補助操作'),
+          surgical_assist: formData.skills.assistantSkills.includes('外科アシスト'),
+          tek_creation: formData.skills.assistantSkills.includes('TEK作成'),
+          mft_instruction: formData.skills.assistantSkills.includes('MFTの指導'),
+          attachment_placement: formData.skills.assistantSkills.includes('アタッチメント装着'),
+          intraoral_photography: formData.skills.assistantSkills.includes('口腔内写真撮影、サポート'),
+          home_care_maintenance: formData.skills.assistantSkills.includes('訪問診療メンテナンス業務'),
+          orthodontic_wire_removal: formData.skills.assistantSkills.includes('矯正ワイヤー除去'),
+          general_treatment_assist: formData.skills.assistantSkills.includes('CR、根管治療、義歯、形成印象等の一般診療アシスト'),
+        });
+
+      if (auxSkillsError) throw auxSkillsError;
+
+      // staff_desired_fields テーブルにデータを挿入
+      const { error: desiredFieldsError } = await supabase
+        .from('staff_desired_fields')
+        .upsert({
+          user_id: user.id,
+          orthodontics: formData.skills.specializedFields.includes('矯正歯科'),
+          home_care_dentistry: formData.skills.specializedFields.includes('訪問歯科'),
+          pediatric_dentistry: formData.skills.specializedFields.includes('小児歯科'),
+          oral_surgery: formData.skills.specializedFields.includes('口腔外科'),
+        });
+
+      if (desiredFieldsError) throw desiredFieldsError;
+
+      // staff_equipment テーブルにデータを挿入
+      const { error: equipmentError } = await supabase
+        .from('staff_equipment')
+        .upsert({
+          user_id: user.id,
+          scrub_white: formData.equipment.scrubs.includes('白'),
+          scrub_other: formData.equipment.scrubs.includes('白以外'),
+          pants_white: formData.equipment.pants.includes('白'),
+          pants_black: formData.equipment.pants.includes('黒'),
+          shoes_white: formData.equipment.shoes.includes('白'),
+          shoes_black: formData.equipment.shoes.includes('黒'),
+          goggles_white: formData.equipment.goggles.includes('白'),
+          goggles_black: formData.equipment.goggles.includes('黒'),
+        });
+
+      if (equipmentError) throw equipmentError;
+
+      // work_experiences テーブルにデータを挿入
+      for (const exp of formData.workExperiences) {
+        const { data: workExpData, error: workExpError } = await supabase
+          .from('work_experiences')
+          .upsert({
+            user_id: user.id,
+            hospital_name: exp.hospitalName,
+            start_date: exp.startDate ? exp.startDate.toISOString() : new Date().toISOString(), // 開始日が未定義の場合は現在の日付を使用
+            end_date: exp.endDate ? exp.endDate.toISOString() : null, // 終了日が未定義の場合はnullを使用
+          })
+          .select();
+      
+        if (workExpError) throw workExpError;
+      
+        // work_responsibilities テーブルにデータを挿入
+        if (workExpData && workExpData[0]) {
+          for (const resp of exp.responsibilities) {
+            const { error: respError } = await supabase
+              .from('work_responsibilities')
+              .upsert({
+                work_experience_id: workExpData[0].id,
+                responsibility: resp,
+              });
+      
+            if (respError) throw respError;
+          }
+        }
+      }
+
+      // education テーブルにデータを挿入
+      const { error: educationError } = await supabase
+        .from('education')
+        .upsert({
+          user_id: user.id,
+          school_name: formData.education.schoolName,
+          graduation_year: formData.education.graduationYear,
+          graduation_month: formData.education.graduationMonth,
+        });
+
+      if (educationError) throw educationError;
+
+      console.log('Form Data saved successfully');
+      onNext(formData);
+    } catch (error) {
+      console.error('Error saving form data:', error);
+      // ここでエラーメッセージをユーザーに表示する処理を追加
+    }
   };
 
   const [open, setOpen] = useState(false);
@@ -300,25 +429,36 @@ const handleResponsibilitiesClose = () => {
           </Grid>
 
           <SectionTitle variant="h5">持ち物</SectionTitle>
-          <DescriptionText variant="body2">
-            ※持っていない場合はチェックを入れないでください
-          </DescriptionText>
+        <DescriptionText variant="body2">
+          ※持っていない場合はチェックを入れないでください
+        </DescriptionText>
 
-          <Grid container spacing={2} sx={{ mb: 4 }}>
-            {['スクラブ', 'パンツ', 'シューズ', 'ゴーグル'].map((category) => (
-              <Grid item xs={3} key={category}>
-                <EquipmentItem variant="subtitle1">{category}</EquipmentItem>
-                <FormControlLabel
-                  control={<Checkbox onChange={handleCheckboxChange('equipment', category.toLowerCase() as EquipmentCategory)} value="白" />}
-                  label="白"
-                />
-                <FormControlLabel
-                  control={<Checkbox onChange={handleCheckboxChange('equipment', category.toLowerCase() as EquipmentCategory)} value="黒" />}
-                  label="黒"
-                />
-              </Grid>
-            ))}
+        <Grid container spacing={2} sx={{ mb: 4 }}>
+          <Grid item xs={3}>
+            <EquipmentItem variant="subtitle1">スクラブ</EquipmentItem>
+            <FormControlLabel
+              control={<Checkbox onChange={handleCheckboxChange('equipment', 'scrubs')} value="白" />}
+              label="白"
+            />
+            <FormControlLabel
+              control={<Checkbox onChange={handleCheckboxChange('equipment', 'scrubs')} value="白以外" />}
+              label="白以外"
+            />
           </Grid>
+          {['パンツ', 'シューズ', 'ゴーグル'].map((category) => (
+            <Grid item xs={3} key={category}>
+              <EquipmentItem variant="subtitle1">{category}</EquipmentItem>
+              <FormControlLabel
+                control={<Checkbox onChange={handleCheckboxChange('equipment', category.toLowerCase() as EquipmentCategory)} value="白" />}
+                label="白"
+              />
+              <FormControlLabel
+                control={<Checkbox onChange={handleCheckboxChange('equipment', category.toLowerCase() as EquipmentCategory)} value="黒" />}
+                label="黒"
+              />
+            </Grid>
+          ))}
+        </Grid>
 
           <SectionTitle variant="h5">職務経歴</SectionTitle>
           {formData.workExperiences.map((exp, index) => (

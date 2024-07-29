@@ -4,15 +4,25 @@ import React from 'react';
 import { Box, Container, Typography, Stepper, Step, StepLabel } from '@mui/material';
 import { BasicInfoForm } from '@/components/staff-registration/basic-info/BasicInfoForm';
 import { useRouter } from 'next/navigation';
+import { getDevelopmentUser } from '@/utils/auth-helper';
 
 const steps = ['基本情報入力', 'スキル・経歴入力', 'プロフィール写真登録', '本人確認・免許の提出', '利用規約・同意'];
 
-
 export default function BasicInfoFormWrapper() {
   const router = useRouter();
-  const handleNext = (data: any) => {
-    console.log('Submitted data:', data);
-    router.push('/register/staff/preference-experience');
+
+  const handleNext = async (data: any) => {
+    try {
+      const user = await getDevelopmentUser('staff');
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      console.log('Submitted data:', data);
+      router.push('/register/staff/preference-experience');
+    } catch (error) {
+      console.error('Authentication error:', error);
+      // ここでエラーメッセージをユーザーに表示する処理を追加
+    }
   };
 
   return (

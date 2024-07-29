@@ -41,17 +41,18 @@ const UploadBox = styled(Box)(({ theme }) => ({
 }));
 
 const identityDocs = [
-  { value: 'license', label: '運転免許証', icon: 'mdi:card-account-details-outline' },
+  { value: 'drivers_license', label: '運転免許証', icon: 'mdi:card-account-details-outline' },
   { value: 'passport', label: '旅券(パスポート)', icon: 'mdi:passport' },
-  { value: 'mynumber', label: '個人番号カード', icon: 'mdi:card-account-details' },
-  { value: 'residence', label: '在留カード・特別永住者証明書', icon: 'mdi:card-account-details-star-outline' },
-];
+  { value: 'my_number_card', label: '個人番号カード', icon: 'mdi:card-account-details' },
+  { value: 'residence_card', label: '在留カード・特別永住者証明書', icon: 'mdi:card-account-details-star-outline' },
+] as const;
 
 const licenseDocs = [
-  { value: 'hygienist', label: '歯科衛生士免許証', icon: 'mdi:tooth-outline' },
-  { value: 'student', label: '歯科学生証', icon: 'mdi:school-outline' },
-  { value: 'assistant', label: '歯科助手身分証', icon: 'mdi:account-tie-outline' },
-];
+  { value: 'dental_hygienist', label: '歯科衛生士免許証', icon: 'mdi:tooth-outline' },
+  { value: 'dental_student', label: '歯科学生証', icon: 'mdi:school-outline' },
+  { value: 'dental_assistant', label: '歯科助手身分証', icon: 'mdi:account-tie-outline' },
+  { value: 'dental_technician', label: '歯科技工士身分証', icon: 'mdi:tools' },
+] as const;
 
 export function IdentityAndLicenseVerificationForm({ onNext }: { onNext: (data: any) => void }) {
   const [identityDocType, setIdentityDocType] = useState('');

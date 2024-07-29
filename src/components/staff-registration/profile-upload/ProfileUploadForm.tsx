@@ -9,6 +9,8 @@ import {
   Switch,
   FormControlLabel,
   styled,
+  Alert,
+  Snackbar,
 } from '@mui/material';
 import { Iconify } from '@/components/iconify';
 
@@ -30,16 +32,6 @@ const DescriptionText = styled(Typography)(({ theme }) => ({
   textAlign: 'center',
 }));
 
-const StyledAvatar = styled(Avatar)(({ theme }) => ({
-  width: 80,
-  height: 80,
-  cursor: 'pointer',
-  transition: 'transform 0.2s',
-  '&:hover': {
-    transform: 'scale(1.1)',
-  },
-}));
-
 const StyledButton = styled(Button)(({ theme }) => ({
   minWidth: 200,
   height: 56,
@@ -47,28 +39,17 @@ const StyledButton = styled(Button)(({ theme }) => ({
 }));
 
 interface ProfileUploadFormProps {
-  onNext: (data: any) => void;
+  onNext: (data: { file: File; isPublic: boolean }) => Promise<void>;
   onSkip: () => void;
 }
 
-const avatars = [
-  { icon: 'mdi:account', color: '#1976d2' },
-  { icon: 'mdi:account-circle', color: '#388e3c' },
-  { icon: 'mdi:account-box', color: '#d32f2f' },
-  { icon: 'mdi:account-tie', color: '#ffa000' },
-  { icon: 'mdi:account-star', color: '#7b1fa2' },
-];
-
 export const ProfileUploadForm: React.FC<ProfileUploadFormProps> = ({ onNext, onSkip }) => {
-  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleAvatarSelect = (avatar: string) => {
-    setSelectedAvatar(avatar);
-  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -82,36 +63,25 @@ export const ProfileUploadForm: React.FC<ProfileUploadFormProps> = ({ onNext, on
     }
   };
 
-  const handleSubmit = () => {
-    onNext({ selectedAvatar, profilePhoto, isPublic });
+  const handleSubmit = async () => {
+    if (!profilePhoto) {
+      setError('プロフィール写真を選択してください。');
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      await onNext({ file: profilePhoto, isPublic });
+    } catch (err) {
+      setError('アップロード中にエラーが発生しました。もう一度お試しください。');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Container maxWidth="md">
       <StyledPaper elevation={3}>
-        <SectionTitle variant="h5">アバターの選択</SectionTitle>
-        <DescriptionText>
-          thootアプリで使用するアバターを以下のテンプレートから選択してください。
-        </DescriptionText>
-        <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 2, mb: 3 }}>
-          {avatars.map((avatar, index) => (
-            <StyledAvatar
-              key={index}
-              sx={{
-                bgcolor: avatar.color,
-                border: avatar.icon === selectedAvatar ? '2px solid #1976d2' : 'none',
-              }}
-              onClick={() => handleAvatarSelect(avatar.icon)}
-            >
-              <Iconify icon={avatar.icon} width={40} height={40} />
-            </StyledAvatar>
-          ))}
-        </Box>
-
-        <SectionTitle variant="h5">プロフィール写真のアップロード</SectionTitle>
-        <DescriptionText>
-          本人写真をアップロードしてください。明るく、顔がはっきりと写っている写真が最適です。
-        </DescriptionText>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
           {profilePhotoPreview ? (
             <Avatar
@@ -163,16 +133,21 @@ export const ProfileUploadForm: React.FC<ProfileUploadFormProps> = ({ onNext, on
             label="プロフィール写真を一般公開する"
           />
         </Box>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          プロフィール写真を公開設定にすることで、オファー数が増える可能性が高くなります。
+          非公開に設定した場合でも、マッチング後には医院側があなたの写真を閲覧できます。
+        </Alert>
         <DescriptionText>
           {isPublic
-            ? "プロフィール写真が他のユーザーに公開されます。"
-            : "プロフィール写真は非公開となり、選択したアバターがデフォルトで表示されます。"}
+            ? "プロフィール写真が他のユーザーに公開されます。これにより、あなたのプロフィールの魅力が高まり、より多くのオファーを受け取る可能性が増えます。"
+            : "プロフィール写真は非公開となりますが、マッチング後に医院側が閲覧できるようになります。初期段階では公開されませんが、マッチング成立後はお互いの情報共有のために開示されます。"}
         </DescriptionText>
 
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4 }}>
           <StyledButton
             variant="outlined"
             onClick={onSkip}
+            disabled={isLoading}
           >
             後で登録する
           </StyledButton>
@@ -180,13 +155,19 @@ export const ProfileUploadForm: React.FC<ProfileUploadFormProps> = ({ onNext, on
             variant="contained"
             color="primary"
             onClick={handleSubmit}
-            disabled={!selectedAvatar && !profilePhoto}
+            disabled={!profilePhoto || isLoading}
             sx={{ color: 'white' }}
           >
-            次へ
+            {isLoading ? '処理中...' : '次へ'}
           </StyledButton>
         </Box>
       </StyledPaper>
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError(null)}
+        message={error}
+      />
     </Container>
   );
 };

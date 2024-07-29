@@ -15,6 +15,7 @@ import {
   FormControlLabel,
   SelectChangeEvent,
   Paper,
+  InputAdornment,
 } from '@mui/material';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -192,22 +193,46 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="最寄り駅"
-                name="nearest_station"
-                value={formData.nearest_station}
-                onChange={handleChange}
-              />
-            </Grid>
+            <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="最寄り駅"
+              name="nearest_station"
+              value={formData.nearest_station}
+              onChange={handleChange}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="最寄り駅から徒歩（分）"
+              name="walking_time_from_station"
+              value={formData.walking_time_from_station}
+              onChange={handleChange}
+              type="number"
+              InputProps={{
+                endAdornment: <InputAdornment position="end">分</InputAdornment>,
+              }}
+            />
+          </Grid>
 
             {/* 医院の詳細情報 */}
             <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom sx={{ mt: 4, mb: 3 }}>
-                医院の詳細情報
-              </Typography>
-            </Grid>
+            <Typography variant="h6" gutterBottom sx={{ mt: 4, mb: 3 }}>
+              医院の詳細情報
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="医院のウェブサイトURL"
+              name="website_url"
+              value={formData.website_url}
+              onChange={handleChange}
+              placeholder="https://example.com"
+            />
+          </Grid>
+
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>在籍スタッフ人数</InputLabel>
