@@ -18,7 +18,8 @@ import {
   FormControl,
   InputLabel,
   Popover,
-  Chip
+  Chip,
+  SelectChangeEvent
 } from '@mui/material';
 import { Iconify } from '@/components/iconify';
 import { getSupabase } from '@/utils/supabase-client';
@@ -102,6 +103,7 @@ interface WorkExperience {
 }
 
 interface FormData {
+  experienceYears: string;
   skills: {
     [K in SkillCategory]: string[];
   };
@@ -118,6 +120,7 @@ interface FormData {
 
 export const PreferencesExperienceForm: React.FC<PreferencesExperienceFormProps> = ({ onNext }) => {
   const [formData, setFormData] = useState<FormData>({
+    experienceYears: '1年未満',
     skills: {
       srp: [],
       maintenance: [],
@@ -179,21 +182,33 @@ export const PreferencesExperienceForm: React.FC<PreferencesExperienceFormProps>
     setFormData({ ...formData, education: { ...formData.education, [field]: value } });
   };
 
+  const handleExperienceYearsChange = (event: SelectChangeEvent<string>) => {
+    setFormData(prevData => ({
+      ...prevData,
+      experienceYears: event.target.value
+    }));
+  };
+
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const user = await getDevelopmentUser('staff');
+      const user = await getDevelopmentUser('staff', {
+        email: 'dev-staff-user1@example.com',
+        password: 'devpassword'
+      });
       if (!user) {
         throw new Error('User not found');
       }
-
+  
       const supabase = getSupabase();
-
-      // staff_skills テーブルにデータを挿入
+  
+      // staff_skills テーブルにデータを挿入（経験年数を含む）
       const { error: skillsError } = await supabase
         .from('staff_skills')
         .upsert({
           user_id: user.id,
+          experience_years: formData.experienceYears,
           srp_light_moderate: formData.skills.srp.includes('軽度ー中程度'),
           srp_moderate_severe: formData.skills.srp.includes('中度ー重度'),
           maintenance_child_15min: formData.skills.maintenance.includes('子供15分'),
@@ -207,10 +222,10 @@ export const PreferencesExperienceForm: React.FC<PreferencesExperienceFormProps>
           probing_6_points: formData.skills.dentalCare.includes('ブローピング6点法'),
           whitening: formData.skills.dentalCare.includes('ホワイトニング'),
           tbi: formData.skills.dentalCare.includes('TBI(フッ化物等の説明)'),
-        });
-
+        }, { onConflict: 'user_id' });
+  
       if (skillsError) throw skillsError;
-
+  
       // staff_auxiliary_skills テーブルにデータを挿入
       const { error: auxSkillsError } = await supabase
         .from('staff_auxiliary_skills')
@@ -229,10 +244,10 @@ export const PreferencesExperienceForm: React.FC<PreferencesExperienceFormProps>
           home_care_maintenance: formData.skills.assistantSkills.includes('訪問診療メンテナンス業務'),
           orthodontic_wire_removal: formData.skills.assistantSkills.includes('矯正ワイヤー除去'),
           general_treatment_assist: formData.skills.assistantSkills.includes('CR、根管治療、義歯、形成印象等の一般診療アシスト'),
-        });
-
+        }, { onConflict: 'user_id' });
+  
       if (auxSkillsError) throw auxSkillsError;
-
+  
       // staff_desired_fields テーブルにデータを挿入
       const { error: desiredFieldsError } = await supabase
         .from('staff_desired_fields')
@@ -242,10 +257,10 @@ export const PreferencesExperienceForm: React.FC<PreferencesExperienceFormProps>
           home_care_dentistry: formData.skills.specializedFields.includes('訪問歯科'),
           pediatric_dentistry: formData.skills.specializedFields.includes('小児歯科'),
           oral_surgery: formData.skills.specializedFields.includes('口腔外科'),
-        });
-
+        }, { onConflict: 'user_id' });
+  
       if (desiredFieldsError) throw desiredFieldsError;
-
+  
       // staff_equipment テーブルにデータを挿入
       const { error: equipmentError } = await supabase
         .from('staff_equipment')
@@ -259,39 +274,44 @@ export const PreferencesExperienceForm: React.FC<PreferencesExperienceFormProps>
           shoes_black: formData.equipment.shoes.includes('黒'),
           goggles_white: formData.equipment.goggles.includes('白'),
           goggles_black: formData.equipment.goggles.includes('黒'),
+        }, { onConflict: 'user_id' });
+  
+      if (equipmentError) throw equipmentError;
+  
+      // work_experiences テーブルにデータを挿入
+for (const exp of formData.workExperiences) {
+  const { data: workExpData, error: workExpError } = await supabase
+    .from('work_experiences')
+    .upsert({
+      user_id: user.id,
+      hospital_name: exp.hospitalName,
+      start_date: exp.startDate ? exp.startDate.toISOString() : null,
+      end_date: exp.endDate ? exp.endDate.toISOString() : null,
+    })
+    .select();
+
+  if (workExpError) {
+    console.error('Error inserting work experience:', workExpError);
+    throw workExpError;
+  }
+
+  // work_responsibilities テーブルにデータを挿入
+  if (workExpData && workExpData[0]) {
+    for (const resp of exp.responsibilities) {
+      const { error: respError } = await supabase
+        .from('work_responsibilities')
+        .upsert({
+          work_experience_id: workExpData[0].id,
+          responsibility: resp,
         });
 
-      if (equipmentError) throw equipmentError;
-
-      // work_experiences テーブルにデータを挿入
-      for (const exp of formData.workExperiences) {
-        const { data: workExpData, error: workExpError } = await supabase
-          .from('work_experiences')
-          .upsert({
-            user_id: user.id,
-            hospital_name: exp.hospitalName,
-            start_date: exp.startDate ? exp.startDate.toISOString() : new Date().toISOString(), // 開始日が未定義の場合は現在の日付を使用
-            end_date: exp.endDate ? exp.endDate.toISOString() : null, // 終了日が未定義の場合はnullを使用
-          })
-          .select();
-      
-        if (workExpError) throw workExpError;
-      
-        // work_responsibilities テーブルにデータを挿入
-        if (workExpData && workExpData[0]) {
-          for (const resp of exp.responsibilities) {
-            const { error: respError } = await supabase
-              .from('work_responsibilities')
-              .upsert({
-                work_experience_id: workExpData[0].id,
-                responsibility: resp,
-              });
-      
-            if (respError) throw respError;
-          }
-        }
+      if (respError) {
+        console.error('Error inserting work responsibility:', respError);
+        throw respError;
       }
-
+    }
+  }
+}
       // education テーブルにデータを挿入
       const { error: educationError } = await supabase
         .from('education')
@@ -300,10 +320,10 @@ export const PreferencesExperienceForm: React.FC<PreferencesExperienceFormProps>
           school_name: formData.education.schoolName,
           graduation_year: formData.education.graduationYear,
           graduation_month: formData.education.graduationMonth,
-        });
-
+        }, { onConflict: 'user_id' });
+  
       if (educationError) throw educationError;
-
+  
       console.log('Form Data saved successfully');
       onNext(formData);
     } catch (error) {
@@ -311,7 +331,6 @@ export const PreferencesExperienceForm: React.FC<PreferencesExperienceFormProps>
       // ここでエラーメッセージをユーザーに表示する処理を追加
     }
   };
-
   const [open, setOpen] = useState(false);
 
   const handleResponsibilitiesClick = (event: React.MouseEvent<HTMLButtonElement>, index: number) => {
@@ -353,8 +372,33 @@ const handleResponsibilitiesClose = () => {
 
   return (
     <StyledPaper elevation={3}>
-      <form onSubmit={handleSubmit}>
-        <Container maxWidth="md">
+    <form onSubmit={handleSubmit}>
+      <Container maxWidth="md">
+        <SectionTitle variant="h5">経験年数</SectionTitle>
+        <Grid container spacing={2} sx={{ mb: 4 }}>
+          <Grid item xs={12}>
+            <FormControl fullWidth required>
+              <InputLabel id="experience-years-label">経験年数</InputLabel>
+                <Select
+                labelId="experience-years-label"
+                id="experience-years"
+                value={formData.experienceYears}
+                onChange={handleExperienceYearsChange}
+                label="経験年数"
+>
+                <MenuItem value="1年未満">1年未満</MenuItem>
+                <MenuItem value="1年以上">1年以上</MenuItem>
+                <MenuItem value="2年以上">2年以上</MenuItem>
+                <MenuItem value="3年以上">3年以上</MenuItem>
+                <MenuItem value="4年以上">4年以上</MenuItem>
+                <MenuItem value="5年以上">5年以上</MenuItem>
+                <MenuItem value="6~10年">6~10年</MenuItem>
+                <MenuItem value="11年~15年">11年~15年</MenuItem>
+                <MenuItem value="16年以上">16年以上</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
           <SectionTitle variant="h5">所有スキル</SectionTitle>
           <DescriptionText variant="body2">
             ※できること、経験したことがある業務・スキルにチェックを入れてください

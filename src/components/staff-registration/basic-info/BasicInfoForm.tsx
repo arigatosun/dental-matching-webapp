@@ -83,7 +83,10 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onNext }) => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const user = await getDevelopmentUser('staff');
+      const user = await getDevelopmentUser('staff', {
+        email: 'dev-staff-user1@example.com',
+        password: 'devpassword'
+      });
       if (!user) {
         throw new Error('User not found');
       }

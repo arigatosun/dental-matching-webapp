@@ -438,7 +438,7 @@ export interface Database {
           id: string
           user_id: string
           hospital_name: string
-          start_date: string
+          start_date: string | null  // null を許容するように変更
           end_date: string | null
           created_at: string
           updated_at: string
@@ -447,7 +447,7 @@ export interface Database {
           id?: string
           user_id: string
           hospital_name: string
-          start_date: string
+          start_date: string | null  // null を許容するように変更
           end_date?: string | null
           created_at?: string
           updated_at?: string
@@ -456,7 +456,7 @@ export interface Database {
           id?: string
           user_id?: string
           hospital_name?: string
-          start_date?: string
+          start_date?: string | null  // null を許容するように変更
           end_date?: string | null
           created_at?: string
           updated_at?: string

@@ -13,7 +13,12 @@ export default function BasicInfoFormWrapper() {
 
   const handleNext = async (data: any) => {
     try {
-      const user = await getDevelopmentUser('staff');
+      const user = await getDevelopmentUser('staff', {
+        email: 'dev-staff-user1@example.com',
+        password: 'devpassword'
+      });
+    
+      
       if (!user) {
         throw new Error('User not authenticated');
       }

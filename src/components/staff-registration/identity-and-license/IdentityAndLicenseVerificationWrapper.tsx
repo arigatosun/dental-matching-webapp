@@ -24,7 +24,8 @@ export default function IdentityAndLicenseVerificationWrapper() {
   }) => {
     try {
       const supabase = getSupabase();
-      const user = await getDevelopmentUser('staff');
+      const user = await getDevelopmentUser('staff')
+      
       
       if (!user) {
         throw new Error('開発用ユーザーの取得に失敗しました。');
