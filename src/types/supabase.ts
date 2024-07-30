@@ -11,6 +11,17 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+  export interface MatchedStaff {
+    id: string;
+    nickname: string;
+    profession: string;
+    desired_salary: number;
+    match_count: number;
+    location: string;
+    experience: string;
+  }
+  
+
 export interface Database {
   public: {
     Tables: {
@@ -596,12 +607,21 @@ export interface Database {
           updated_at?: string
         }
       }
+      
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      match_staff: {
+        Args: {
+          p_profession: string;
+          p_skills: string[];
+          p_experience: string;
+          p_date: string | null;
+        };
+        Returns: MatchedStaff[];
+      };
     }
     Enums: {
       [_ in never]: never

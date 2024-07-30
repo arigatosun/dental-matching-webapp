@@ -78,7 +78,7 @@ const clinicEquipmentOptions = ['スクラブ', 'パンツ', '院内シューズ
 const staffEquipmentCategories = ['スクラブ', 'パンツ', '院内シューズ', 'ゴーグル'];
 
 const appearanceOptions = [
-  'ネイルok',
+  'ネイルOK',
   '髪型自由',
   'カラコンOK',
   'まつエクOK',
@@ -345,22 +345,22 @@ export default function ClinicDetailsTab() {
                     <Grid item xs={12} sm={6} key={category}>
                       <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>{category}</Typography>
                       <FormGroup>
-                        {['白', category !== 'パンツ' ? '白以外' : '黒'].map((color) => (
-                          <FormControlLabel
-                            key={`${category}-${color}`}
-                            control={
-                              <Checkbox
-                                checked={field.value.includes(`${category}#${color}`)}
-                                onChange={(e) => {
-                                  const value = `${category}#${color}`;
-                                  const updatedEquipment = e.target.checked
-                                    ? [...field.value, value]
-                                    : field.value.filter((i) => i !== value);
-                                  field.onChange(updatedEquipment);
-                                }}
-                              />
-                            }
-                            label={color}
+                      {['白', category !== 'パンツ' ? '黒' : '黒'].map((color) => (
+                        <FormControlLabel
+                          key={`${category}-${color}`}
+                          control={
+                            <Checkbox
+                              checked={field.value.includes(`${category}#${color}`)}
+                              onChange={(e) => {
+                                const value = `${category}#${color}`;
+                                const updatedEquipment = e.target.checked
+                                  ? [...field.value, value]
+                                  : field.value.filter((i) => i !== value);
+                                field.onChange(updatedEquipment);
+                              }}
+                            />
+                          }
+                          label={color}
                           />
                         ))}
                       </FormGroup>
