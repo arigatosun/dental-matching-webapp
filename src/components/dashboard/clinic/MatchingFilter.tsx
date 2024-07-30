@@ -15,7 +15,8 @@ import {
   Box,
   SelectChangeEvent,
   TextField,
-  Button,
+  ListItemText,
+  OutlinedInput,
 } from '@mui/material';
 
 const skillOptions: Record<string, string[]> = {
@@ -48,24 +49,15 @@ const skillOptions: Record<string, string[]> = {
 };
 
 const experienceOptions: string[] = [
-  '1年未満',
-  '1年以上',
-  '2年以上',
-  '3年以上',
-  '4年以上',
-  '5年以上',
-  '6~10年',
-  '11年~15年',
-  '16年以上',
+  '1年未満', '1年以上', '2年以上', '3年以上', '4年以上',
+  '5年以上', '6~10年', '11年~15年', '16年以上',
 ];
 
 const MatchingFilter: React.FC = () => {
   const [profession, setProfession] = useState<string>('歯科衛生士');
   const [date, setDate] = useState<string>('');
   const [skills, setSkills] = useState<string[]>([]);
-  const [tempSkills, setTempSkills] = useState<string[]>([]);
   const [experience, setExperience] = useState<string>('1年以上');
-  const [isSkillMenuOpen, setIsSkillMenuOpen] = useState(false);
 
   const handleProfessionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setProfession(event.target.value);
@@ -75,28 +67,19 @@ const MatchingFilter: React.FC = () => {
     setDate(event.target.value);
   };
 
-  const handleSkillChange = (event: SelectChangeEvent<typeof tempSkills>) => {
-    const value = event.target.value;
-    setTempSkills(typeof value === 'string' ? value.split(',') : value);
-  };
-
-  const handleSkillMenuOpen = () => {
-    setIsSkillMenuOpen(true);
-    setTempSkills(skills);
-  };
-
-  const handleSkillMenuClose = () => {
-    setIsSkillMenuOpen(false);
-  };
-
-  const handleSkillComplete = () => {
-    setSkills(tempSkills);
-    handleSkillMenuClose();
+  const handleSkillChange = (event: SelectChangeEvent<typeof skills>) => {
+    const {
+      target: { value },
+    } = event;
+    setSkills(typeof value === 'string' ? value.split(',') : value);
   };
 
   const handleExperienceChange = (event: SelectChangeEvent<string>) => {
     setExperience(event.target.value);
   };
+
+  // すべてのスキルを1つの配列にフラット化
+  const allSkills = Object.values(skillOptions).flat();
 
   return (
     <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
@@ -145,37 +128,26 @@ const MatchingFilter: React.FC = () => {
           <FormControl fullWidth>
             <Select
               multiple
-              value={tempSkills}
+              value={skills}
               onChange={handleSkillChange}
-              onOpen={handleSkillMenuOpen}
-              onClose={handleSkillMenuClose}
-              renderValue={(selected) => (selected as string[]).join(', ')}
-              open={isSkillMenuOpen}
+              input={<OutlinedInput />}
+              renderValue={(selected) => selected.join(', ')}
               MenuProps={{
                 PaperProps: {
                   style: {
                     maxHeight: 48 * 4.5 + 8,
-                    width: 250,
+                    width: 400, // 幅を広げたままにします
+                    maxWidth: '90vw', // 画面幅の90%を超えないようにします
                   },
                 },
               }}
             >
-              {Object.entries(skillOptions).map(([category, options]) => (
-                <Box key={category}>
-                  <MenuItem disabled>{category}</MenuItem>
-                  {options.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      <Checkbox checked={tempSkills.indexOf(option) > -1} />
-                      {option}
-                    </MenuItem>
-                  ))}
-                </Box>
+              {allSkills.map((skill) => (
+                <MenuItem key={skill} value={skill}>
+                  <Checkbox checked={skills.indexOf(skill) > -1} />
+                  <ListItemText primary={skill} />
+                </MenuItem>
               ))}
-              <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                <Button onClick={handleSkillComplete} color="primary">
-                  完了
-                </Button>
-              </Box>
             </Select>
           </FormControl>
         </Grid>
