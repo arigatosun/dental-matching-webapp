@@ -27,44 +27,56 @@ const StaffCard: React.FC<StaffCardProps> = ({
 }) => {
   return (
     <Card sx={{ maxWidth: 345, m: 2 }}>
-      <Box sx={{ position: 'relative', height: 140, bgcolor: 'grey.200', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <Box sx={{ 
+        position: 'relative', 
+        width: 160,
+        height: 160,
+        margin: '0 auto',
+        mt: 2,
+        bgcolor: 'grey.200', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        borderRadius: '50%', // コンテナを円形にする
+        overflow: 'hidden', // はみ出た部分を隠す
+      }}>
         <Image
-          src="/images/avater/sample-avater.jpg"
+          src="/images/avater/no-image-profile-photo.svg"
           alt={nickname}
-          width={100}
-          height={100}
-          style={{ borderRadius: '50%' }}
+          layout="fill"
+          objectFit="contain" // アスペクト比を維持しつつ、コンテナ内に収める
+          style={{ padding: '10px' }} // 画像の周りに少し余白を設ける
         />
       </Box>
-      <CardContent>
-        <Typography gutterBottom variant="h6" component="div">
+      <CardContent sx={{ pt: 2 }}>
+        <Typography gutterBottom variant="h6" component="div" sx={{ mb: 1, textAlign: 'center' }}>
           {nickname}
         </Typography>
-        <Box display="flex" alignItems="center" mt={1}>
+        <Box display="flex" alignItems="center" mb={0.5}>
           <PersonIcon fontSize="small" />
           <Typography variant="body2" ml={1}>
             職種：{profession}
           </Typography>
         </Box>
-        <Box display="flex" alignItems="center" mt={1}>
+        <Box display="flex" alignItems="center" mb={0.5}>
           <LocationOnIcon fontSize="small" />
           <Typography variant="body2" ml={1}>
             希望勤務地：{location}
           </Typography>
         </Box>
-        <Box display="flex" alignItems="center" mt={1}>
+        <Box display="flex" alignItems="center" mb={0.5}>
           <WorkIcon fontSize="small" />
           <Typography variant="body2" ml={1}>
             経験年数：{experience}
           </Typography>
         </Box>
-        <Box display="flex" alignItems="center" mt={1}>
+        <Box display="flex" alignItems="center" mb={0.5}>
           <AttachMoneyIcon fontSize="small" />
           <Typography variant="body2" ml={1}>
             希望時給: ¥{desiredSalary.toLocaleString()}
           </Typography>
         </Box>
-        <Box display="flex" alignItems="center" mt={1}>
+        <Box display="flex" alignItems="center" mb={0.5}>
           <RepeatIcon fontSize="small" />
           <Typography variant="body2" ml={1}>
             マッチ回数: {matchCount}回
