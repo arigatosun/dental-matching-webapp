@@ -7,15 +7,11 @@ import Footer from '../components/topview/Footer';
 
 export default function Home() {
   return (
-    <>
+    <main>
       <Header />
-      <main>
-        <HeroSection />
-        <Container>
-          <ServiceOverview />
-        </Container>
-      </main>
+      <HeroSection />
+      <ServiceOverview />
       <Footer />
-    </>
+    </main>
   );
 }
