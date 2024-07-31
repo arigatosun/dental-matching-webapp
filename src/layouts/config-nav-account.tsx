@@ -12,7 +12,7 @@ export const _account = [
   },
   {
     label: 'マイページ',
-    href: '#',
+    href: '/dashboard/clinic/mypage/profile',
     icon: (
       <SvgIcon>
         <path
@@ -29,18 +29,18 @@ export const _account = [
   },
   {
     label: 'メールアドレス変更',
-    href: '#',
+    href: '/dashboard/clinic/mypage/account-settings',
     icon: <Iconify icon="solar:letter-bold-duotone" />,
     info: '3',
   },
   {
     label: 'パスワード変更',
-    href: '#',
+    href: '/dashboard/clinic/mypage/account-settings',
     icon: <Iconify icon="ic:round-vpn-key" />,
   },
   {
     label: 'メール通知設定',
-    href: '#',
+    href: '/dashboard/clinic/mypage/notification-settings',
     icon: <Iconify icon="mdi:bell-ring-outline" />,
   },
   {

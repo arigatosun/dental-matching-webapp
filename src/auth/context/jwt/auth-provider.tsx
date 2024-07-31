@@ -1,22 +1,11 @@
 'use client';
 
-import axios, { endpoints } from '@/utils/axios';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useSetState } from '@/hooks/use-set-state';
-import { useMemo, useEffect, useCallback } from 'react';
-
-import { STORAGE_KEY } from './constant';
 import { AuthContext } from '../auth-context';
-import { setSession, isValidToken } from './utils';
-
-import type { AuthState } from '../../types';
-
-// ----------------------------------------------------------------------
-
-/**
- * NOTE:
- * We only build demo at basic level.
- * Customer will need to do some extra handling yourself if you want to extend the logic and other features...
- */
+import { supabase } from '@/utils/supabase';
+import type { AuthState, AuthContextValue } from '../../types';
+import { Session } from '@supabase/supabase-js';
 
 type Props = {
   children: React.ReactNode;
@@ -28,46 +17,37 @@ export function AuthProvider({ children }: Props) {
     loading: true,
   });
 
-  const checkUserSession = useCallback(async () => {
+  const checkUserSession = useCallback(async (): Promise<Session | null> => {
     try {
-      const accessToken = sessionStorage.getItem(STORAGE_KEY);
-
-      if (accessToken && isValidToken(accessToken)) {
-        setSession(accessToken);
-
-        const res = await axios.get(endpoints.auth.me);
-
-        const { user } = res.data;
-
-        setState({ user: { ...user, accessToken }, loading: false });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setState({ user, loading: false });
+        return session;
       } else {
         setState({ user: null, loading: false });
+        return null;
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error checking user session:', error);
       setState({ user: null, loading: false });
+      return null;
     }
   }, [setState]);
 
   useEffect(() => {
     checkUserSession();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [checkUserSession]);
 
-  // ----------------------------------------------------------------------
+  const status = state.loading ? 'loading' : state.user ? 'authenticated' : 'unauthenticated';
 
-  const checkAuthenticated = state.user ? 'authenticated' : 'unauthenticated';
-
-  const status = state.loading ? 'loading' : checkAuthenticated;
-
-  const memoizedValue = useMemo(
+  const memoizedValue: AuthContextValue = useMemo(
     () => ({
-      user: state.user
-        ? {
-            ...state.user,
-            role: state.user?.role ?? 'admin',
-          }
-        : null,
+      user: state.user,
       checkUserSession,
       loading: status === 'loading',
       authenticated: status === 'authenticated',

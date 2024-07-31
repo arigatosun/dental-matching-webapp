@@ -23,12 +23,13 @@ export function SignOutButton({ onClose, ...other }: Props) {
   const handleLogout = useCallback(async () => {
     try {
       await signOut();
-      await checkUserSession?.();
-
+      if (checkUserSession) {
+        await checkUserSession();
+      }
       onClose?.();
-      router.refresh();
+      router.push('/auth/jwt/sign-in'); // ログインページにリダイレクト
     } catch (error) {
-      console.error(error);
+      console.error('ログアウト中にエラーが発生しました:', error);
     }
   }, [checkUserSession, onClose, router]);
 

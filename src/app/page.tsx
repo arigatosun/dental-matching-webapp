@@ -1,17 +1,16 @@
-'use client';
+import React from 'react';
+import Header from '@/components/topview/Header';
+import HeroSection from '@/components/topview/HeroSection';
+import ServiceOverview from '@/components/topview/ServiceOverview';
+import Footer from '@/components/topview/Footer';
 
-import { useEffect } from 'react';
-import { CONFIG } from '@/config-global';
-import { useRouter } from 'next/navigation';
-
-// ----------------------------------------------------------------------
-
-export default function Page() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.push(CONFIG.auth.redirectPath);
-  }, [router]);
-
-  return null;
+export default function Home() {
+  return (
+    <main>
+      <Header />
+      <HeroSection />
+      <ServiceOverview />
+      <Footer />
+    </main>
+  );
 }
