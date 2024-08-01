@@ -1,19 +1,11 @@
-'use client';
+'use client'
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  Grid,
-  Card,
-  CardMedia,
-  Typography,
-  Button,
-  TextField,
-  Box,
-  Snackbar,
-  Alert,
-  Paper,
-  Link,
+  Grid, Card, CardMedia, Typography, Button, TextField, Box, Snackbar, Alert, Paper, Link
 } from '@mui/material';
+import { useAuth } from '@/hooks/useAuth';
+import { getSupabase } from '@/utils/supabase-client';
 
 interface ClinicData {
   clinicName: string;
@@ -31,28 +23,31 @@ interface ClinicData {
   };
 }
 
-const initialData: ClinicData = {
-  clinicName: "医療法人 アリガトウ歯科",
-  directorName: "歯科 太郎",
-  phoneNumber: "06-6426-7474",
-  prefecture: "兵庫県",
-  city: "神田北通",
-  address: "6丁目3番1号 西村ビル2F",
-  nearestStation: "○○線 ○○駅",
-  walkingTimeFromStation: "5分",
-  introduction: "当院クリニックは、地域の皆様に信頼される歯科医療を目指し、最新の技術と温かいホスピタリティで患者様をお迎えしています。私たちは、患者様一人ひとりに寄り添い最適な治療を提供することを第一に考え、丁寧なカウンセリングと確かな技術で皆様の歯の健康をサポートいたします。\n\n当院では、歯科衛生士との連携が高まるような環境づくりを意識しています。\n歯科衛生士の皆様には、患者様の口腔衛生を守る重要な役割を担っていただいております。私たちと一緒に、地域の皆様の健康な笑顔を守るチームの一員となっていただければ幸いです。",
-  clinicUrl: "https://www.arigatou-dental.com",
-  photos: {
-    director: "/images/profile-sample/directer.jpg",
-    exterior: "/images/profile-sample/gaikan-image.jpg",
-    reception: "/images/profile-sample/uketsuke.jpg",
-    unit: "/images/profile-sample/unit-images.jpg"
-  }
-};
-
 export default function ProfileTab() {
-  const [clinicData, setClinicData] = useState<ClinicData>(initialData);
+  const { user } = useAuth();
+  const [clinicData, setClinicData] = useState<ClinicData>({
+    clinicName: '',
+    directorName: '',
+    phoneNumber: '',
+    prefecture: '',
+    city: '',
+    address: '',
+    nearestStation: '',
+    walkingTimeFromStation: '',
+    introduction: '',
+    clinicUrl: '',
+    photos: {
+      director: '',
+      exterior: '',
+      reception: '',
+      unit: '',
+    },
+  });
+  const [isLoading, setIsLoading] = useState(true);
   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+
   const fileInputRefs = {
     director: useRef<HTMLInputElement>(null),
     reception: useRef<HTMLInputElement>(null),
@@ -60,8 +55,120 @@ export default function ProfileTab() {
     unit: useRef<HTMLInputElement>(null),
   };
 
-  const handleSave = () => {
-    console.log('Saving data:', clinicData);
+  useEffect(() => {
+    console.log('Current user:', user);
+    if (user) {
+      console.log('User ID:', user.id);
+      fetchClinicData();
+    } else {
+      console.log('No user logged in');
+      setIsLoading(false);
+    }
+  }, [user]);
+
+
+  const fetchClinicData = async () => {
+  setIsLoading(true);
+  try {
+    console.log('Fetching clinic data...');
+    const supabase = getSupabase();
+    console.log('Supabase client created');
+    
+    console.log('Fetching basic info...');
+    const { data: basicInfo, error: basicInfoError } = await supabase
+      .from('clinic_basic_info')
+      .select('*')
+      .eq('user_id', user?.id)
+      .single();
+
+    console.log('Basic info fetched:', basicInfo);
+    if (basicInfoError) {
+      console.error('Error fetching basic info:', basicInfoError);
+      throw basicInfoError;
+    }
+
+    if (!basicInfo) {
+      console.log('No basic info found for user');
+      return; // Exit the function if no data is found
+    }
+
+    console.log('Fetching photos...');
+    const { data: photos, error: photosError } = await supabase
+      .from('clinic_photos')
+      .select('*')
+      .eq('user_id', user?.id)
+      .single();
+
+    console.log('Photos fetched:', photos);
+    if (photosError) {
+      console.error('Error fetching photos:', photosError);
+      throw photosError;
+    }
+
+    setClinicData({
+      clinicName: basicInfo.clinic_name || '',
+      directorName: `${basicInfo.director_last_name || ''} ${basicInfo.director_first_name || ''}`,
+      phoneNumber: basicInfo.phone_number || '',
+      prefecture: basicInfo.prefecture || '',
+      city: basicInfo.city || '',
+      address: basicInfo.address || '',
+      nearestStation: basicInfo.nearest_station || '',
+      walkingTimeFromStation: basicInfo.walking_time_from_station?.toString() || '',
+      introduction: basicInfo.clinic_introduction || '',
+      clinicUrl: basicInfo.website_url || '',
+      photos: {
+        director: photos?.director_photo_url || '',
+        exterior: photos?.exterior_photo_url || '',
+        reception: photos?.reception_photo_url || '',
+        unit: photos?.unit_photo_url || '',
+      },
+    });
+    console.log('Clinic data set:', clinicData);
+  } catch (error) {
+    console.error('Error in fetchClinicData:', error);
+    showSnackbar('プロフィールデータの取得に失敗しました', 'error');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = event.target;
+    setClinicData(prevData => ({...prevData, [name]: value}));
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    try {
+      const supabase = getSupabase();
+      const { error: updateError } = await supabase
+        .from('clinic_basic_info')
+        .update({
+          clinic_name: clinicData.clinicName,
+          phone_number: clinicData.phoneNumber,
+          prefecture: clinicData.prefecture,
+          city: clinicData.city,
+          address: clinicData.address,
+          nearest_station: clinicData.nearestStation,
+          walking_time_from_station: parseInt(clinicData.walkingTimeFromStation) || null,
+          clinic_introduction: clinicData.introduction,
+          website_url: clinicData.clinicUrl,
+        })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      showSnackbar('プロフィールが更新されました', 'success');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      showSnackbar('プロフィールの更新に失敗しました', 'error');
+    }
+  };
+
+  const showSnackbar = (message: string, severity: 'success' | 'error') => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
     setIsSnackbarOpen(true);
   };
 
@@ -76,29 +183,38 @@ export default function ProfileTab() {
     fileInputRefs[photoType].current?.click();
   };
 
-  const handleFileChange = (photoType: keyof typeof fileInputRefs) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (photoType: keyof typeof fileInputRefs) => async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
+    if (file && user) {
+      try {
+        const supabase = getSupabase();
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${photoType}_${Date.now()}.${fileExt}`;
+        const { data, error } = await supabase.storage
+          .from('clinic-photos')
+          .upload(`${user.id}/${fileName}`, file);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('clinic-photos')
+          .getPublicUrl(`${user.id}/${fileName}`);
+
+        await supabase
+          .from('clinic_photos')
+          .upsert({ user_id: user.id, [`${photoType}_photo_url`]: publicUrl }, { onConflict: 'user_id' });
+
         setClinicData(prevData => ({
           ...prevData,
-          photos: {
-            ...prevData.photos,
-            [photoType]: reader.result as string,
-          },
+          photos: { ...prevData.photos, [photoType]: publicUrl }
         }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = event.target;
-    setClinicData(prevData => ({
-      ...prevData,
-      [name]: value,
-    }));
+        showSnackbar('写真がアップロードされました', 'success');
+      } catch (error) {
+        console.error('Error uploading photo:', error);
+        showSnackbar('写真のアップロードに失敗しました', 'error');
+      }
+    }
   };
 
   const renderPhoto = (photoType: keyof typeof fileInputRefs, title: string, size: string) => (
@@ -113,7 +229,7 @@ export default function ProfileTab() {
     >
       <CardMedia
         component="img"
-        image={clinicData.photos[photoType]}
+        image={clinicData.photos[photoType] || '/images/profile-sample/no-image-profile-photo.svg'}
         alt={title}
         sx={{ 
           width: '100%', 
@@ -165,6 +281,14 @@ export default function ProfileTab() {
       />
     </Box>
   );
+
+  if (isLoading) {
+    return <Typography>Loading...</Typography>;
+  }
+  
+  if (!clinicData.clinicName) {
+    return <Typography>No data available</Typography>;
+  }
 
   return (
     <Box sx={{ width: '100%', mt: 2 }}>
@@ -315,8 +439,8 @@ export default function ProfileTab() {
         </Button>
       </Box>
       <Snackbar open={isSnackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
-          変更が保存されました！
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </Box>

@@ -1,14 +1,12 @@
+// account-drawer.tsx
 'use client';
 
 import type { IconButtonProps } from '@mui/material/IconButton';
-
 import { useRouter } from '@/routes/hooks';
-import { useMockedUser } from '@/auth/hooks';
 import { useState, useCallback } from 'react';
 import { Iconify } from '@/components/iconify';
 import { Scrollbar } from '@/components/scrollbar';
 import { AnimateAvatar } from '@/components/animate';
-
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Drawer from '@mui/material/Drawer';
@@ -16,11 +14,9 @@ import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-
 import { AccountButton } from './account-button';
 import { SignOutButton } from './sign-out-button';
-
-// ----------------------------------------------------------------------
+import { useAuth } from '@/hooks/useAuth';
 
 export type AccountDrawerProps = IconButtonProps & {
   data?: {
@@ -33,11 +29,8 @@ export type AccountDrawerProps = IconButtonProps & {
 
 export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
   const theme = useTheme();
-
   const router = useRouter();
-
-  const { user } = useMockedUser();
-
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
 
   const handleOpenDrawer = useCallback(() => {
@@ -68,7 +61,7 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
         },
       }}
     >
-      {user?.displayName?.charAt(0).toUpperCase()}
+      {user?.displayName?.charAt(0).toUpperCase() || ''}
     </AnimateAvatar>
   );
 
@@ -77,8 +70,6 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
       <AccountButton
         open={open}
         onClick={handleOpenDrawer}
-        photoURL={user?.photoURL}
-        displayName={user?.displayName}
         sx={sx}
         {...other}
       />

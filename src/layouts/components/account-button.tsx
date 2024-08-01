@@ -1,24 +1,21 @@
+// account-button.tsx
 import type { IconButtonProps } from '@mui/material/IconButton';
-
 import { m } from 'framer-motion';
 import { varHover, AnimateAvatar } from '@/components/animate';
-
 import NoSsr from '@mui/material/NoSsr';
 import Avatar from '@mui/material/Avatar';
 import SvgIcon from '@mui/material/SvgIcon';
 import { useTheme } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
-
-// ----------------------------------------------------------------------
+import { useAuth } from '@/hooks/useAuth';
 
 export type AccountButtonProps = IconButtonProps & {
   open: boolean;
-  photoURL: string;
-  displayName: string;
 };
 
-export function AccountButton({ open, photoURL, displayName, sx, ...other }: AccountButtonProps) {
+export function AccountButton({ open, sx, ...other }: AccountButtonProps) {
   const theme = useTheme();
+  const { user } = useAuth();
 
   const renderFallback = (
     <Avatar
@@ -51,7 +48,7 @@ export function AccountButton({ open, photoURL, displayName, sx, ...other }: Acc
       <NoSsr fallback={renderFallback}>
         <AnimateAvatar
           slotProps={{
-            avatar: { src: photoURL, alt: displayName },
+            avatar: { src: user?.photoURL, alt: user?.displayName },
             overlay: {
               border: 1,
               spacing: 2,
@@ -59,7 +56,7 @@ export function AccountButton({ open, photoURL, displayName, sx, ...other }: Acc
             },
           }}
         >
-          {displayName?.charAt(0).toUpperCase()}
+          {user?.displayName?.charAt(0).toUpperCase() || ''}
         </AnimateAvatar>
       </NoSsr>
     </IconButton>

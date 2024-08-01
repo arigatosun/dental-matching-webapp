@@ -25,6 +25,105 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      clinic_basic_info: {
+        Row: {
+          id: string
+          user_id: string | null
+          clinic_name: string
+          director_last_name: string
+          director_first_name: string
+          director_last_name_kana: string
+          director_first_name_kana: string
+          phone_number: string
+          postal_code: string
+          prefecture: string
+          city: string
+          address: string
+          building_name: string | null
+          nearest_station: string | null
+          staff_count: string
+          unit_count: string
+          average_patients_per_day: string
+          has_intercom: string
+          business_hours_start: string
+          business_hours_end: string
+          recall_time_slot: string
+          clinic_introduction: string | null
+          clinic_equipment: string[] | null
+          staff_brings: string[] | null
+          appearance: string[] | null
+          job_details: string[] | null
+          created_at: string | null
+          updated_at: string | null
+          website_url: string | null
+          walking_time_from_station: number | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          clinic_name: string
+          director_last_name: string
+          director_first_name: string
+          director_last_name_kana: string
+          director_first_name_kana: string
+          phone_number: string
+          postal_code: string
+          prefecture: string
+          city: string
+          address: string
+          building_name?: string | null
+          nearest_station?: string | null
+          staff_count: string
+          unit_count: string
+          average_patients_per_day: string
+          has_intercom: string
+          business_hours_start: string
+          business_hours_end: string
+          recall_time_slot: string
+          clinic_introduction?: string | null
+          clinic_equipment?: string[] | null
+          staff_brings?: string[] | null
+          appearance?: string[] | null
+          job_details?: string[] | null
+          created_at?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+          walking_time_from_station?: number | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          clinic_name?: string
+          director_last_name?: string
+          director_first_name?: string
+          director_last_name_kana?: string
+          director_first_name_kana?: string
+          phone_number?: string
+          postal_code?: string
+          prefecture?: string
+          city?: string
+          address?: string
+          building_name?: string | null
+          nearest_station?: string | null
+          staff_count?: string
+          unit_count?: string
+          average_patients_per_day?: string
+          has_intercom?: string
+          business_hours_start?: string
+          business_hours_end?: string
+          recall_time_slot?: string
+          clinic_introduction?: string | null
+          clinic_equipment?: string[] | null
+          staff_brings?: string[] | null
+          appearance?: string[] | null
+          job_details?: string[] | null
+          created_at?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+          walking_time_from_station?: number | null
+        }
+      }
+    }
       clinic_certifications: {
         Row: {
           id: string
@@ -630,6 +729,5 @@ export interface Database {
       [_ in never]: never
     }
   }
-}
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
