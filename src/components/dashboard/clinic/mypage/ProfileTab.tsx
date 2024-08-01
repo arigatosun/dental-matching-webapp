@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
   Grid, Card, CardMedia, Typography, Button, TextField, Box, Snackbar, Alert, Paper, Link
 } from '@mui/material';
-import { useAuth } from '@/hooks/useAuth';
+import { AuthContext } from '@/auth/context/auth-context';
 import { getSupabase } from '@/utils/supabase-client';
+import { AuthContextValue, ExtendedUser } from '@/auth/types';
 
 interface ClinicData {
   clinicName: string;
@@ -24,7 +25,14 @@ interface ClinicData {
 }
 
 export default function ProfileTab() {
-  const { user } = useAuth();
+  const authContext = useContext(AuthContext);
+  
+  if (!authContext) {
+    throw new Error('AuthContext must be used within an AuthProvider');
+  }
+
+  const { user } = authContext;
+
   const [clinicData, setClinicData] = useState<ClinicData>({
     clinicName: '',
     directorName: '',
@@ -56,81 +64,70 @@ export default function ProfileTab() {
   };
 
   useEffect(() => {
-    console.log('Current user:', user);
     if (user) {
-      console.log('User ID:', user.id);
       fetchClinicData();
     } else {
-      console.log('No user logged in');
       setIsLoading(false);
     }
   }, [user]);
 
-
   const fetchClinicData = async () => {
-  setIsLoading(true);
-  try {
-    console.log('Fetching clinic data...');
-    const supabase = getSupabase();
-    console.log('Supabase client created');
-    
-    console.log('Fetching basic info...');
-    const { data: basicInfo, error: basicInfoError } = await supabase
-      .from('clinic_basic_info')
-      .select('*')
-      .eq('user_id', user?.id)
-      .single();
+    setIsLoading(true);
+    try {
+      console.log('User data:', user); // デバッグ用
+      const basicInfo = (user as ExtendedUser)?.additionalInfo?.clinic_basic_info?.[0];
+      const photos = (user as ExtendedUser)?.additionalInfo?.clinic_photos?.[0];
 
-    console.log('Basic info fetched:', basicInfo);
-    if (basicInfoError) {
-      console.error('Error fetching basic info:', basicInfoError);
-      throw basicInfoError;
+      console.log('Basic info:', basicInfo); // デバッグ用
+      console.log('Photos:', photos); // デバッグ用
+
+      if (!basicInfo) {
+        console.log('Basic info not found, user might not have completed registration');
+        setClinicData({
+          clinicName: 'データなし',
+          directorName: 'データなし',
+          phoneNumber: 'データなし',
+          prefecture: 'データなし',
+          city: 'データなし',
+          address: 'データなし',
+          nearestStation: 'データなし',
+          walkingTimeFromStation: 'データなし',
+          introduction: 'データなし',
+          clinicUrl: 'データなし',
+          photos: {
+            director: '',
+            exterior: '',
+            reception: '',
+            unit: '',
+          },
+        });
+      } else {
+        setClinicData({
+          clinicName: basicInfo.clinic_name || 'データなし',
+          directorName: `${basicInfo.director_last_name || ''} ${basicInfo.director_first_name || ''}` || 'データなし',
+          phoneNumber: basicInfo.phone_number || 'データなし',
+          prefecture: basicInfo.prefecture || 'データなし',
+          city: basicInfo.city || 'データなし',
+          address: basicInfo.address || 'データなし',
+          nearestStation: basicInfo.nearest_station || 'データなし',
+          walkingTimeFromStation: basicInfo.walking_time_from_station?.toString() || 'データなし',
+          introduction: basicInfo.clinic_introduction || 'データなし',
+          clinicUrl: basicInfo.website_url || 'データなし',
+          photos: {
+            director: photos?.director_photo_url || '',
+            exterior: photos?.exterior_photo_url || '',
+            reception: photos?.reception_photo_url || '',
+            unit: photos?.unit_photo_url || '',
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching clinic data:', error);
+      showSnackbar('プロフィールデータの取得に失敗しました', 'error');
+    } finally {
+      setIsLoading(false);
     }
-
-    if (!basicInfo) {
-      console.log('No basic info found for user');
-      return; // Exit the function if no data is found
-    }
-
-    console.log('Fetching photos...');
-    const { data: photos, error: photosError } = await supabase
-      .from('clinic_photos')
-      .select('*')
-      .eq('user_id', user?.id)
-      .single();
-
-    console.log('Photos fetched:', photos);
-    if (photosError) {
-      console.error('Error fetching photos:', photosError);
-      throw photosError;
-    }
-
-    setClinicData({
-      clinicName: basicInfo.clinic_name || '',
-      directorName: `${basicInfo.director_last_name || ''} ${basicInfo.director_first_name || ''}`,
-      phoneNumber: basicInfo.phone_number || '',
-      prefecture: basicInfo.prefecture || '',
-      city: basicInfo.city || '',
-      address: basicInfo.address || '',
-      nearestStation: basicInfo.nearest_station || '',
-      walkingTimeFromStation: basicInfo.walking_time_from_station?.toString() || '',
-      introduction: basicInfo.clinic_introduction || '',
-      clinicUrl: basicInfo.website_url || '',
-      photos: {
-        director: photos?.director_photo_url || '',
-        exterior: photos?.exterior_photo_url || '',
-        reception: photos?.reception_photo_url || '',
-        unit: photos?.unit_photo_url || '',
-      },
-    });
-    console.log('Clinic data set:', clinicData);
-  } catch (error) {
-    console.error('Error in fetchClinicData:', error);
-    showSnackbar('プロフィールデータの取得に失敗しました', 'error');
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
@@ -138,8 +135,6 @@ export default function ProfileTab() {
   };
 
   const handleSave = async () => {
-    if (!user) return;
-
     try {
       const supabase = getSupabase();
       const { error: updateError } = await supabase
@@ -155,7 +150,7 @@ export default function ProfileTab() {
           clinic_introduction: clinicData.introduction,
           website_url: clinicData.clinicUrl,
         })
-        .eq('user_id', user.id);
+        .eq('user_id', user?.id);
 
       if (updateError) throw updateError;
 
@@ -286,8 +281,8 @@ export default function ProfileTab() {
     return <Typography>Loading...</Typography>;
   }
   
-  if (!clinicData.clinicName) {
-    return <Typography>No data available</Typography>;
+  if (!clinicData.clinicName || clinicData.clinicName === 'データなし') {
+    return <Typography>プロフィール情報がまだ登録されていません。</Typography>;
   }
 
   return (
@@ -424,7 +419,7 @@ export default function ProfileTab() {
         </Grid>
       </Grid>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-        <Button 
+      <Button 
           variant="contained" 
           color="primary" 
           onClick={handleSave}

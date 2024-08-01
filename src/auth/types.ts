@@ -1,16 +1,23 @@
-import { Session } from '@supabase/supabase-js';
+import { Session, User } from '@supabase/supabase-js';
 
-export type UserType = Record<string, any> | null;
+type AdditionalInfo = {
+  [key: string]: any;
+  work_responsibilities?: any[];
+};
+
+export type ExtendedUser = User & { additionalInfo?: AdditionalInfo };
 
 export type AuthState = {
-  user: UserType;
+  user: ExtendedUser | null;
   loading: boolean;
+  error: string | null;
 };
 
 export type AuthContextValue = {
-  user: UserType;
+  user: ExtendedUser | null;
   loading: boolean;
   authenticated: boolean;
   unauthenticated: boolean;
+  error: string | null;
   checkUserSession: () => Promise<Session | null>;
 };

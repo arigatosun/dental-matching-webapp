@@ -72,8 +72,8 @@ export function useAuth() {
         .from('clinic_photos')
         .select('director_photo_url')
         .eq('user_id', user.id)
-        .single();
-      
+        .maybeSingle();
+
       if (clinicError) {
         console.error("Error fetching clinic photo:", clinicError);
       } else {
@@ -84,8 +84,8 @@ export function useAuth() {
         .from('clinic_basic_info')
         .select('clinic_name')
         .eq('user_id', user.id)
-        .single();
-      
+        .maybeSingle();
+
       if (infoError) {
         console.error("Error fetching clinic info:", infoError);
       } else {
