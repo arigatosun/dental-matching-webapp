@@ -34,22 +34,27 @@ export function useAuth() {
       if (isMounted) setLoading(false);
     }
 
-    // 初期ユーザー状態の確認
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    async function initializeAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
       console.log("Initial user check:", user);
-      fetchAndSetUser(user);
-    });
+      if (isMounted) {
+        await fetchAndSetUser(user);
+      }
 
-    // 認証状態の変更を監視
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session?.user);
-      fetchAndSetUser(session?.user || null);
-    });
+      const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log("Auth state changed:", event, session?.user);
+        if (isMounted) {
+          await fetchAndSetUser(session?.user || null);
+        }
+      });
 
-    return () => {
-      isMounted = false;
-      authListener.subscription.unsubscribe();
-    };
+      return () => {
+        isMounted = false;
+        authListener.subscription.unsubscribe();
+      };
+    }
+
+    initializeAuth();
   }, []);
 
   async function fetchUserProfile(user: User): Promise<UserProfile> {

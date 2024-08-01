@@ -14,3 +14,6 @@ export default function Layout({ children }: Props) {
     </GuestGuard>
   );
 }
+
+///GuestGuardでは、認証されていないユーザー（ゲスト）のみがアクセスできるようにするためのガードで
+///認証済みのユーザーがこのページにアクセスしようとすると、指定されたリダイレクトパスに自動的に転送されます

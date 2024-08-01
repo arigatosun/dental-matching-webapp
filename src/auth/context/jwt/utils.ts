@@ -91,3 +91,5 @@ export async function setSession(accessToken: string | null) {
     throw error;
   }
 }
+
+///トークン管理や検証のためのユーティリティ関数を提供している
