@@ -1,9 +1,8 @@
-// account-drawer.tsx
 'use client';
 
-import type { IconButtonProps } from '@mui/material/IconButton';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from '@/routes/hooks';
-import { useState, useCallback } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { Iconify } from '@/components/iconify';
 import { Scrollbar } from '@/components/scrollbar';
 import { AnimateAvatar } from '@/components/animate';
@@ -14,11 +13,11 @@ import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import CircularProgress from '@mui/material/CircularProgress';
 import { AccountButton } from './account-button';
 import { SignOutButton } from './sign-out-button';
-import { useAuth } from '@/hooks/useAuth';
 
-export type AccountDrawerProps = IconButtonProps & {
+export type AccountDrawerProps = React.ComponentProps<typeof IconButton> & {
   data?: {
     label: string;
     href: string;
@@ -30,8 +29,14 @@ export type AccountDrawerProps = IconButtonProps & {
 export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
   const theme = useTheme();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading, error } = useAuth();
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    console.log('AccountDrawer: user', user);
+    console.log('AccountDrawer: loading', loading);
+    console.log('AccountDrawer: error', error);
+  }, [user, loading, error]);
 
   const handleOpenDrawer = useCallback(() => {
     setOpen(true);
@@ -49,11 +54,11 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
     [handleCloseDrawer, router]
   );
 
-  const renderAvatar = (
+  const renderAvatar = user ? (
     <AnimateAvatar
       width={96}
       slotProps={{
-        avatar: { src: user?.photoURL, alt: user?.displayName },
+        avatar: { src: user.photoURL, alt: user.clinicName },
         overlay: {
           border: 2,
           spacing: 3,
@@ -61,18 +66,79 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
         },
       }}
     >
-      {user?.displayName?.charAt(0).toUpperCase() || ''}
+      {user.clinicName?.charAt(0).toUpperCase() || ''}
     </AnimateAvatar>
-  );
+  ) : null;
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+          <CircularProgress />
+        </Box>
+      );
+    }
+
+    if (error) {
+      return (
+        <Typography align="center" sx={{ p: 3, color: 'error.main' }}>
+          エラー: {error}
+        </Typography>
+      );
+    }
+
+    if (!user) {
+      return (
+        <Typography align="center" sx={{ p: 3 }}>
+          ユーザーがログインしていません。
+        </Typography>
+      );
+    }
+
+    return (
+      <>
+        <Stack alignItems="center" sx={{ pt: 8, pb: 5 }}>
+          {renderAvatar}
+
+          <Typography variant="subtitle1" sx={{ mt: 2 }}>
+            {user.clinicName}
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+            {user.email}
+          </Typography>
+        </Stack>
+
+        <Stack
+          sx={{
+            px: 2.5,
+            pb: 3,
+            borderTop: `solid 1px ${theme.vars.palette.divider}`,
+          }}
+        >
+          {data.map((option) => (
+            <MenuItem
+              key={option.label}
+              onClick={() => handleClickItem(option.href)}
+              sx={{
+                py: 1.5,
+                color: 'text.secondary',
+                '& svg': { width: 24, height: 24, mr: 2 },
+                '&:hover': { color: 'text.primary' },
+              }}
+            >
+              {option.icon}
+              {option.label}
+            </MenuItem>
+          ))}
+        </Stack>
+      </>
+    );
+  };
 
   return (
     <>
-      <AccountButton
-        open={open}
-        onClick={handleOpenDrawer}
-        sx={sx}
-        {...other}
-      />
+      <AccountButton open={open} onClick={handleOpenDrawer} sx={sx} {...other} />
 
       <Drawer
         open={open}
@@ -88,43 +154,7 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
           <Iconify icon="mingcute:close-line" />
         </IconButton>
 
-        <Scrollbar>
-          <Stack alignItems="center" sx={{ pt: 8, pb: 5 }}>
-            {renderAvatar}
-
-            <Typography variant="subtitle1" sx={{ mt: 2 }}>
-              {user?.displayName}
-            </Typography>
-
-            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-              {user?.email}
-            </Typography>
-          </Stack>
-
-          <Stack
-            sx={{
-              px: 2.5,
-              pb: 3,
-              borderTop: `solid 1px ${theme.vars.palette.divider}`,
-            }}
-          >
-            {data.map((option) => (
-              <MenuItem
-                key={option.label}
-                onClick={() => handleClickItem(option.href)}
-                sx={{
-                  py: 1.5,
-                  color: 'text.secondary',
-                  '& svg': { width: 24, height: 24, mr: 2 },
-                  '&:hover': { color: 'text.primary' },
-                }}
-              >
-                {option.icon}
-                {option.label}
-              </MenuItem>
-            ))}
-          </Stack>
-        </Scrollbar>
+        <Scrollbar>{renderContent()}</Scrollbar>
 
         <Box sx={{ p: 2.5 }}>
           <SignOutButton onClose={handleCloseDrawer} fullWidth />

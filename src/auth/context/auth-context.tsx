@@ -1,13 +1,14 @@
-'use client';
-
+// src/contexts/auth-context.ts
 import { createContext } from 'react';
+import { User } from '@supabase/supabase-js';
 
-import type { AuthContextValue } from '../types';
+export interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+  signIn: (email: string, password: string) => Promise<boolean>;
+  signOut: () => Promise<void>;
+  checkUserSession: () => Promise<User | null>;
+}
 
-// ----------------------------------------------------------------------
-
-export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-
-export const AuthConsumer = AuthContext.Consumer;
-
-///auth-contextは認証状態を管理し、アプリケーション全体で利用可能にする
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);

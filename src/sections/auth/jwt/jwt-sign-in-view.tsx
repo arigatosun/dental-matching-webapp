@@ -1,7 +1,7 @@
 'use client';
 
 import { z as zod } from 'zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { paths } from '@/routes/paths';
 import { useForm } from 'react-hook-form';
 import { useRouter } from '@/routes/hooks';
@@ -41,6 +41,17 @@ export const SignInSchema = zod.object({
 export function JwtSignInView() {
   const router = useRouter();
 
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      console.log('Current session:', session);
+    };
+
+    checkSession();
+  }, []);
+
   const { checkUserSession } = useAuthContext();
 
   const [errorMsg, setErrorMsg] = useState('');
@@ -72,23 +83,15 @@ export function JwtSignInView() {
       if (error) throw error;
 
       console.log('Sign in successful:', signInData);
-      await checkUserSession?.();
-      console.log('User session checked');
 
-      // ユーザーのメタデータを取得
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      const user = await checkUserSession();
+      console.log('User session checked, user:', user);
 
-      if (userError) throw userError;
-
-      if (!user) throw new Error('User not found');
+      if (!user) throw new Error('User not found after session check');
 
       console.log('User metadata:', user.user_metadata);
 
-      // ユーザータイプに基づいてリダイレクト
-      const userType = user.user_metadata.user_type;
+      const userType = user.user_metadata?.user_type;
       const redirectPath = userType === 'clinic' ? '/dashboard/clinic' : '/dashboard/staff';
 
       router.push(redirectPath);

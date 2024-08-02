@@ -1,8 +1,18 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
-  Grid, Card, CardMedia, Typography, Button, TextField, Box, Snackbar, Alert, Paper, Link
+  Grid,
+  Card,
+  CardMedia,
+  Typography,
+  Button,
+  TextField,
+  Box,
+  Snackbar,
+  Alert,
+  Paper,
+  Link,
 } from '@mui/material';
 import { AuthContext } from '@/auth/context/auth-context';
 import { getSupabase } from '@/utils/supabase-client';
@@ -26,7 +36,7 @@ interface ClinicData {
 
 export default function ProfileTab() {
   const authContext = useContext(AuthContext);
-  
+
   if (!authContext) {
     throw new Error('AuthContext must be used within an AuthProvider');
   }
@@ -104,7 +114,9 @@ export default function ProfileTab() {
       } else {
         setClinicData({
           clinicName: basicInfo.clinic_name || 'データなし',
-          directorName: `${basicInfo.director_last_name || ''} ${basicInfo.director_first_name || ''}` || 'データなし',
+          directorName:
+            `${basicInfo.director_last_name || ''} ${basicInfo.director_first_name || ''}` ||
+            'データなし',
           phoneNumber: basicInfo.phone_number || 'データなし',
           prefecture: basicInfo.prefecture || 'データなし',
           city: basicInfo.city || 'データなし',
@@ -131,7 +143,7 @@ export default function ProfileTab() {
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
-    setClinicData(prevData => ({...prevData, [name]: value}));
+    setClinicData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handleSave = async () => {
@@ -178,45 +190,50 @@ export default function ProfileTab() {
     fileInputRefs[photoType].current?.click();
   };
 
-  const handleFileChange = (photoType: keyof typeof fileInputRefs) => async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && user) {
-      try {
-        const supabase = getSupabase();
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${photoType}_${Date.now()}.${fileExt}`;
-        const { data, error } = await supabase.storage
-          .from('clinic-photos')
-          .upload(`${user.id}/${fileName}`, file);
+  const handleFileChange =
+    (photoType: keyof typeof fileInputRefs) =>
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file && user) {
+        try {
+          const supabase = getSupabase();
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${photoType}_${Date.now()}.${fileExt}`;
+          const { data, error } = await supabase.storage
+            .from('clinic-photos')
+            .upload(`${user.id}/${fileName}`, file);
 
-        if (error) throw error;
+          if (error) throw error;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('clinic-photos')
-          .getPublicUrl(`${user.id}/${fileName}`);
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from('clinic-photos').getPublicUrl(`${user.id}/${fileName}`);
 
-        await supabase
-          .from('clinic_photos')
-          .upsert({ user_id: user.id, [`${photoType}_photo_url`]: publicUrl }, { onConflict: 'user_id' });
+          await supabase
+            .from('clinic_photos')
+            .upsert(
+              { user_id: user.id, [`${photoType}_photo_url`]: publicUrl },
+              { onConflict: 'user_id' }
+            );
 
-        setClinicData(prevData => ({
-          ...prevData,
-          photos: { ...prevData.photos, [photoType]: publicUrl }
-        }));
+          setClinicData((prevData) => ({
+            ...prevData,
+            photos: { ...prevData.photos, [photoType]: publicUrl },
+          }));
 
-        showSnackbar('写真がアップロードされました', 'success');
-      } catch (error) {
-        console.error('Error uploading photo:', error);
-        showSnackbar('写真のアップロードに失敗しました', 'error');
+          showSnackbar('写真がアップロードされました', 'success');
+        } catch (error) {
+          console.error('Error uploading photo:', error);
+          showSnackbar('写真のアップロードに失敗しました', 'error');
+        }
       }
-    }
-  };
+    };
 
   const renderPhoto = (photoType: keyof typeof fileInputRefs, title: string, size: string) => (
-    <Box 
-      sx={{ 
-        position: 'relative', 
-        width: size, 
+    <Box
+      sx={{
+        position: 'relative',
+        width: size,
         height: size,
         margin: photoType === 'director' ? '0 auto' : '0',
         mb: photoType === 'director' ? 2 : 0,
@@ -226,11 +243,11 @@ export default function ProfileTab() {
         component="img"
         image={clinicData.photos[photoType] || '/images/profile-sample/no-image-profile-photo.svg'}
         alt={title}
-        sx={{ 
-          width: '100%', 
-          height: '100%', 
-          borderRadius: '50%', 
-          objectFit: 'cover' 
+        sx={{
+          width: '100%',
+          height: '100%',
+          borderRadius: '50%',
+          objectFit: 'cover',
         }}
       />
       <Box
@@ -280,7 +297,7 @@ export default function ProfileTab() {
   if (isLoading) {
     return <Typography>Loading...</Typography>;
   }
-  
+
   if (!clinicData.clinicName || clinicData.clinicName === 'データなし') {
     return <Typography>プロフィール情報がまだ登録されていません。</Typography>;
   }
@@ -291,14 +308,35 @@ export default function ProfileTab() {
         <Grid item xs={12} md={4}>
           <Paper elevation={3} sx={{ p: 2 }}>
             {renderPhoto('director', '院長写真', '200px')}
-            <Typography variant="subtitle1" align="center" gutterBottom>院長写真</Typography>
+            <Typography variant="subtitle1" align="center" gutterBottom>
+              院長写真
+            </Typography>
             <Grid container spacing={2} sx={{ mt: 2 }}>
               {['reception', 'exterior', 'unit'].map((key) => (
                 <Grid item xs={4} key={key}>
-                  <Box sx={{ height: '140px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    {renderPhoto(key as keyof typeof fileInputRefs, key === 'reception' ? '受付写真' : key === 'exterior' ? '外観写真' : 'ユニット写真', '100px')}
+                  <Box
+                    sx={{
+                      height: '140px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {renderPhoto(
+                      key as keyof typeof fileInputRefs,
+                      key === 'reception'
+                        ? '受付写真'
+                        : key === 'exterior'
+                          ? '外観写真'
+                          : 'ユニット写真',
+                      '100px'
+                    )}
                     <Typography variant="caption" align="center" sx={{ mt: 1 }}>
-                      {key === 'reception' ? '受付写真' : key === 'exterior' ? '外観写真' : 'ユニット写真'}
+                      {key === 'reception'
+                        ? '受付写真'
+                        : key === 'exterior'
+                          ? '外観写真'
+                          : 'ユニット写真'}
                     </Typography>
                   </Box>
                 </Grid>
@@ -308,7 +346,9 @@ export default function ProfileTab() {
         </Grid>
         <Grid item xs={12} md={8}>
           <Card sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>医院情報</Typography>
+            <Typography variant="h6" gutterBottom>
+              医院情報
+            </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -341,7 +381,9 @@ export default function ProfileTab() {
                 />
               </Grid>
             </Grid>
-            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>医院住所</Typography>
+            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+              医院住所
+            </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -412,18 +454,23 @@ export default function ProfileTab() {
               onChange={handleInputChange}
               margin="normal"
             />
-            <Link href={clinicData.clinicUrl} target="_blank" rel="noopener noreferrer" sx={{ display: 'inline-block', mt: 1 }}>
+            <Link
+              href={clinicData.clinicUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ display: 'inline-block', mt: 1 }}
+            >
               ウェブサイトを開く
             </Link>
           </Card>
         </Grid>
       </Grid>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-      <Button 
-          variant="contained" 
-          color="primary" 
+        <Button
+          variant="contained"
+          color="primary"
           onClick={handleSave}
-          sx={{ 
+          sx={{
             minWidth: 160,
             height: 48,
             fontSize: '0.875rem',

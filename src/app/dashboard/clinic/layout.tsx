@@ -1,15 +1,17 @@
 import { CONFIG } from '@/config-global';
-import { AuthGuard } from '@/auth/guard';
 import { DashboardLayout } from '@/layouts/dashboard';
+import dynamic from 'next/dynamic';
 
-// ----------------------------------------------------------------------
+const AuthGuard = dynamic(() => import('@/auth/guard/auth-guard').then((mod) => mod.AuthGuard), {
+  ssr: false,
+});
 
 type Props = {
   children: React.ReactNode;
 };
 
 export default function Layout({ children }: Props) {
-  if (CONFIG.auth.skip) {
+  if (typeof window === 'undefined' || CONFIG.auth.skip) {
     return <DashboardLayout>{children}</DashboardLayout>;
   }
 
