@@ -42,10 +42,5 @@ export function GuestGuard({ children }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated, loading]);
 
-  if (isChecking) {
-    console.log;
-    return <SplashScreen />;
-  }
-
   return <>{children}</>;
 }

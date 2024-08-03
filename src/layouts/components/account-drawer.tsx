@@ -76,19 +76,14 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
     return <CircularProgress />;
   }
 
-  if (error) {
-    return <Alert severity="error">{error}</Alert>;
-  }
-
-  if (!user) {
-    return null;
-  }
-
   const renderAvatar = (
     <AnimateAvatar
       width={96}
       slotProps={{
-        avatar: { src: user.photoURL || undefined, alt: user.displayName },
+        avatar: {
+          src: user?.photoURL ?? undefined,
+          alt: user?.displayName ?? 'User',
+        },
         overlay: {
           border: 2,
           spacing: 3,
@@ -96,7 +91,7 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
         },
       }}
     >
-      {user.displayName.charAt(0).toUpperCase()}
+      {user?.displayName?.charAt(0).toUpperCase() ?? 'U'}
     </AnimateAvatar>
   );
 
@@ -105,8 +100,8 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
       <AccountButton
         open={open}
         onClick={handleOpenDrawer}
-        photoURL={user.photoURL || ''}
-        displayName={user.displayName}
+        photoURL={user?.photoURL || ''}
+        displayName={user?.displayName || ''}
         sx={sx}
         {...other}
       />
@@ -130,11 +125,11 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
             {renderAvatar}
 
             <Typography variant="subtitle1" sx={{ mt: 2 }}>
-              {user.displayName}
+              {user?.displayName}
             </Typography>
 
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-              {user.email}
+              {user?.email}
             </Typography>
           </Stack>
 

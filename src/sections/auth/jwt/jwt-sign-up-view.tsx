@@ -11,7 +11,7 @@ import { RouterLink } from '@/routes/components';
 import { useBoolean } from '@/hooks/use-boolean';
 import { Form, Field } from '@/components/hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { supabase } from '@/utils/supabase';
+import { useSupabaseClient } from '@/utils/supabase';
 
 import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
@@ -69,10 +69,7 @@ export function JwtSignUpView() {
     defaultValues,
   });
 
-  const {
-    handleSubmit,
-    watch,
-  } = methods;
+  const { handleSubmit, watch } = methods;
 
   const watchedPassword = watch('password');
   const { validLength, hasUpperCase } = usePasswordValidation(watchedPassword);
@@ -85,8 +82,9 @@ export function JwtSignUpView() {
   };
 
   const onSubmit = handleSubmit(async (data, event) => {
+    const supabase = useSupabaseClient();
     const userType = (event?.nativeEvent as any).submitter.name;
-    
+
     setIsSubmitting(true);
     setErrorMsg('');
     setSuccessMsg('');
@@ -99,13 +97,11 @@ export function JwtSignUpView() {
           data: {
             user_type: userType,
           },
-          emailRedirectTo: `http://localhost:3000/register/${userType}?email=${encodeURIComponent(data.email)}`
+          emailRedirectTo: `http://localhost:3000/register/${userType}?email=${encodeURIComponent(data.email)}`,
         },
       });
 
-
-
-       if (error) throw error;
+      if (error) throw error;
 
       setSuccessMsg('確認メールを送信しました。メールを確認して本登録を完了してください。');
       setTimeout(() => {
@@ -160,16 +156,10 @@ export function JwtSignUpView() {
           }}
         />
         <Stack direction="row" spacing={2}>
-          <Typography
-            variant="caption"
-            color={validLength ? 'success.main' : 'text.secondary'}
-          >
+          <Typography variant="caption" color={validLength ? 'success.main' : 'text.secondary'}>
             ✓ 8文字以上
           </Typography>
-          <Typography
-            variant="caption"
-            color={hasUpperCase ? 'success.main' : 'text.secondary'}
-          >
+          <Typography variant="caption" color={hasUpperCase ? 'success.main' : 'text.secondary'}>
             ✓ 大文字を1つ以上含む
           </Typography>
         </Stack>
