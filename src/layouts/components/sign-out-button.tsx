@@ -5,10 +5,9 @@ import { useCallback } from 'react';
 import { useRouter } from '@/routes/hooks';
 import { useAuthContext } from '@/auth/hooks';
 import { signOut } from '@/auth/context/jwt/action';
+import { useSupabaseClient } from '@/utils/supabase';
 
 import Button from '@mui/material/Button';
-
-// ----------------------------------------------------------------------
 
 type Props = ButtonProps & {
   sx?: SxProps<Theme>;
@@ -17,21 +16,21 @@ type Props = ButtonProps & {
 
 export function SignOutButton({ onClose, ...other }: Props) {
   const router = useRouter();
-
+  const supabase = useSupabaseClient();
   const { checkUserSession } = useAuthContext();
 
   const handleLogout = useCallback(async () => {
     try {
-      await signOut();
+      await signOut(supabase);
       if (checkUserSession) {
         await checkUserSession();
       }
       onClose?.();
-      router.push('/auth/jwt/sign-in'); // ログインページにリダイレクト
+      router.push('/auth/jwt/sign-in');
     } catch (error) {
       console.error('ログアウト中にエラーが発生しました:', error);
     }
-  }, [checkUserSession, onClose, router]);
+  }, [supabase, checkUserSession, onClose, router]);
 
   return (
     <Button fullWidth variant="soft" size="large" color="error" onClick={handleLogout} {...other}>

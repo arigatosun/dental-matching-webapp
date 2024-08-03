@@ -1,10 +1,12 @@
 'use client';
 
 import axios, { endpoints } from '@/utils/axios';
-import { supabase } from '@/utils/supabase';
+import { useSupabaseClient } from '@/utils/supabase';
 
 import { setSession } from './utils';
 import { STORAGE_KEY } from './constant';
+import { useRouter } from 'next/navigation';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 // ----------------------------------------------------------------------
 
@@ -43,10 +45,7 @@ export const signInWithPassword = async ({ email, password }: SignInParams): Pro
 /** **************************************
  * Sign up
  *************************************** */
-export const signUp = async ({
-  email,
-  password,
-}: SignUpParams): Promise<void> => {
+export const signUp = async ({ email, password }: SignUpParams): Promise<void> => {
   const params = {
     email,
     password,
@@ -71,13 +70,13 @@ export const signUp = async ({
 /** **************************************
  * Sign out
  *************************************** */
-export const signOut = async (): Promise<void> => {
+export const signOut = async (supabase: SupabaseClient): Promise<void> => {
   try {
     const { error } = await supabase.auth.signOut();
     if (error) {
       throw error;
     }
-    await setSession(null);
+    // 他の必要なクリーンアップ処理があればここに追加
   } catch (error) {
     console.error('Error during sign out:', error);
     throw error;

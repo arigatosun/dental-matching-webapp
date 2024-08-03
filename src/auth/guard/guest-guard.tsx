@@ -43,6 +43,7 @@ export function GuestGuard({ children }: Props) {
   }, [authenticated, loading]);
 
   if (isChecking) {
+    console.log;
     return <SplashScreen />;
   }
 

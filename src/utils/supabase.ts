@@ -1,6 +1,13 @@
-import { createClient } from '@supabase/supabase-js'
+'use client';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Database } from '@/types/supabase';
+import { useState } from 'react';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const createSupabaseClient = () => createClientComponentClient<Database>();
+
+// クライアントコンポーネントでの使用
+export const useSupabaseClient = () => {
+  const [supabase] = useState(() => createSupabaseClient());
+  return supabase;
+};

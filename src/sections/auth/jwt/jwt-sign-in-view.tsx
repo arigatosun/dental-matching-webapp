@@ -11,7 +11,7 @@ import { RouterLink } from '@/routes/components';
 import { useBoolean } from '@/hooks/use-boolean';
 import { Form, Field } from '@/components/hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { supabase } from '@/utils/supabase';
+import { useSupabaseClient } from '@/utils/supabase';
 
 import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
@@ -40,6 +40,8 @@ export const SignInSchema = zod.object({
 
 export function JwtSignInView() {
   const router = useRouter();
+
+  const supabase = useSupabaseClient();
 
   const { checkUserSession } = useAuthContext();
 

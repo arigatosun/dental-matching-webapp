@@ -1,14 +1,9 @@
 'use client';
 
-import { paths } from '@/routes/paths';
-import { CONFIG } from '@/config-global';
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSupabaseClient } from '@/utils/supabase';
 import { SplashScreen } from '@/components/loading-screen';
-import { useRouter, usePathname, useSearchParams } from '@/routes/hooks';
-
-import { useAuthContext } from '../hooks';
-
-// ----------------------------------------------------------------------
 
 type Props = {
   children: React.ReactNode;
@@ -16,56 +11,38 @@ type Props = {
 
 export function AuthGuard({ children }: Props) {
   const router = useRouter();
-
-  const pathname = usePathname();
-
-  const searchParams = useSearchParams();
-
-  const { authenticated, loading } = useAuthContext();
-
-  const [isChecking, setIsChecking] = useState<boolean>(true);
-
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set(name, value);
-
-      return params.toString();
-    },
-    [searchParams]
-  );
-
-  const checkPermissions = async (): Promise<void> => {
-    if (loading) {
-      return;
-    }
-
-    if (!authenticated) {
-      const { method } = CONFIG.auth;
-
-      const signInPath = {
-        jwt: paths.auth.jwt.signIn,
-        auth0: paths.auth.auth0.signIn,
-        amplify: paths.auth.amplify.signIn,
-        firebase: paths.auth.firebase.signIn,
-        supabase: paths.auth.supabase.signIn,
-      }[method];
-
-      const href = `${signInPath}?${createQueryString('returnTo', pathname)}`;
-
-      router.replace(href);
-      return;
-    }
-
-    setIsChecking(false);
-  };
+  const supabase = useSupabaseClient();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    checkPermissions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated, loading]);
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-  if (isChecking) {
+      if (!session) {
+        router.push('/auth/jwt/sign-in');
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        setIsLoading(false);
+      } else if (event === 'SIGNED_OUT') {
+        router.push('/auth/jwt/sign-in');
+      }
+    });
+
+    checkAuth();
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase, router]);
+
+  if (isLoading) {
     return <SplashScreen />;
   }
 
