@@ -57,7 +57,7 @@ const experienceOptions: string[] = [
 ];
 
 interface MatchingFilterProps {
-  onFilterChange: (professions: string[]) => void;
+  onFilterChange: (professions: string[], experience: string) => void;
 }
 
 const MatchingFilter: React.FC<MatchingFilterProps> = ({ onFilterChange }) => {
@@ -101,8 +101,9 @@ const MatchingFilter: React.FC<MatchingFilterProps> = ({ onFilterChange }) => {
   const allSkills = Object.values(skillOptions).flat();
 
   useEffect(() => {
-    onFilterChange(professions);
-  }, [professions, onFilterChange]);
+    onFilterChange(professions, experience);
+  }, [professions, experience, onFilterChange]);
+
   
 
   return (

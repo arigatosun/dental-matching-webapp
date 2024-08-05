@@ -8,9 +8,10 @@ import { getStaffList } from '@/app/actions/staff';
 
 interface StaffListProps {
   selectedProfessions: string[];
+  selectedExperience: string;
 }
 
-const StaffList: React.FC<StaffListProps> = ({ selectedProfessions }) => {
+const StaffList: React.FC<StaffListProps> = ({ selectedProfessions, selectedExperience }) => {
   const [staffList, setStaffList] = useState<StaffInfo[] | null>(null);
   const [filteredStaffList, setFilteredStaffList] = useState<StaffInfo[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -40,17 +41,48 @@ const StaffList: React.FC<StaffListProps> = ({ selectedProfessions }) => {
 
   useEffect(() => {
     if (staffList) {
-      if (selectedProfessions.length === 0) {
-        setFilteredStaffList(staffList);
-      } else {
-        const filtered = staffList.filter(staff => 
+      let filtered = staffList;
+
+      // 職種でフィルタリング
+      if (selectedProfessions.length > 0) {
+        filtered = filtered.filter(staff => 
           staff.profession.some(p => selectedProfessions.includes(p))
         );
-        setFilteredStaffList(filtered);
       }
+
+      // 経験年数でフィルタリング
+      if (selectedExperience !== '選択してください') {
+        filtered = filtered.filter(staff => {
+          const staffExperience = parseInt(staff.experience_years);
+          switch (selectedExperience) {
+            case '1年未満':
+              return staffExperience < 1;
+            case '1年以上':
+              return staffExperience >= 1;
+            case '2年以上':
+              return staffExperience >= 2;
+            case '3年以上':
+              return staffExperience >= 3;
+            case '4年以上':
+              return staffExperience >= 4;
+            case '5年以上':
+              return staffExperience >= 5;
+            case '6~10年':
+              return staffExperience >= 6 && staffExperience <= 10;
+            case '11年~15年':
+              return staffExperience >= 11 && staffExperience <= 15;
+            case '16年以上':
+              return staffExperience >= 16;
+            default:
+              return true;
+          }
+        });
+      }
+
+      setFilteredStaffList(filtered);
       setPage(1);
     }
-  }, [selectedProfessions, staffList]);
+  }, [selectedProfessions, selectedExperience, staffList]);
 
   const handleChangePage = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
@@ -75,7 +107,7 @@ const StaffList: React.FC<StaffListProps> = ({ selectedProfessions }) => {
   if (!filteredStaffList || filteredStaffList.length === 0) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-        <Typography variant="h6">スタッフが見つかりませんでした。</Typography>
+        <Typography variant="h6">条件に合うスタッフが見つかりませんでした。</Typography>
       </Box>
     );
   }
