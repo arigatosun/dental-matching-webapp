@@ -5,11 +5,8 @@ import {
   Grid,
   Paper,
   FormControl,
-  RadioGroup,
-  Radio,
+  FormGroup,
   FormControlLabel,
-  Select,
-  MenuItem,
   Checkbox,
   Typography,
   Box,
@@ -17,7 +14,12 @@ import {
   TextField,
   ListItemText,
   OutlinedInput,
+  Select,
+  MenuItem,
+  Button,
 } from '@mui/material';
+
+const professionOptions = ['歯科衛生士', '歯科技工士', '歯科助手', '歯科学生'];
 
 const skillOptions: Record<string, string[]> = {
   SRP: ['軽度ー中程度', '中度ー重度'],
@@ -49,18 +51,22 @@ const skillOptions: Record<string, string[]> = {
 };
 
 const experienceOptions: string[] = [
+  '選択してください',
   '1年未満', '1年以上', '2年以上', '3年以上', '4年以上',
   '5年以上', '6~10年', '11年~15年', '16年以上',
 ];
 
 const MatchingFilter: React.FC = () => {
-  const [profession, setProfession] = useState<string>('歯科衛生士');
+  const [professions, setProfessions] = useState<string[]>([]);
   const [date, setDate] = useState<string>('');
   const [skills, setSkills] = useState<string[]>([]);
-  const [experience, setExperience] = useState<string>('1年以上');
+  const [experience, setExperience] = useState<string>('選択してください');
 
   const handleProfessionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setProfession(event.target.value);
+    const { value, checked } = event.target;
+    setProfessions(prev => 
+      checked ? [...prev, value] : prev.filter(item => item !== value)
+    );
   };
 
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,31 +84,42 @@ const MatchingFilter: React.FC = () => {
     setExperience(event.target.value);
   };
 
+  const handleReset = () => {
+    setProfessions([]);
+    setDate('');
+    setSkills([]);
+    setExperience('選択してください');
+  };
+
   // すべてのスキルを1つの配列にフラット化
   const allSkills = Object.values(skillOptions).flat();
 
   return (
-    <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+    <Paper elevation={3} sx={{ p: 3, mb: 3, position: 'relative', pb: 7 }}>
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6} md={3}>
           <Typography variant="subtitle1" gutterBottom>
             職種
           </Typography>
           <FormControl component="fieldset">
-            <RadioGroup
-              aria-label="profession"
-              name="profession"
-              value={profession}
-              onChange={handleProfessionChange}
-            >
+            <FormGroup>
               <Grid container>
-                {['歯科衛生士', '歯科技工士', '歯科助手', '歯科学生'].map((option) => (
+                {professionOptions.map((option) => (
                   <Grid item xs={6} key={option}>
-                    <FormControlLabel value={option} control={<Radio />} label={option} />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={professions.includes(option)}
+                          onChange={handleProfessionChange}
+                          value={option}
+                        />
+                      }
+                      label={option}
+                    />
                   </Grid>
                 ))}
               </Grid>
-            </RadioGroup>
+            </FormGroup>
           </FormControl>
         </Grid>
 
@@ -136,8 +153,8 @@ const MatchingFilter: React.FC = () => {
                 PaperProps: {
                   style: {
                     maxHeight: 48 * 4.5 + 8,
-                    width: 400, // 幅を広げたままにします
-                    maxWidth: '90vw', // 画面幅の90%を超えないようにします
+                    width: 400,
+                    maxWidth: '90vw',
                   },
                 },
               }}
@@ -170,6 +187,24 @@ const MatchingFilter: React.FC = () => {
           </FormControl>
         </Grid>
       </Grid>
+      
+      <Box sx={{ position: 'absolute', bottom: 16, right: 16 }}>
+        <Button
+          variant="contained"
+          onClick={handleReset}
+          sx={{
+            borderRadius: 2,
+            textTransform: 'none',
+            bgcolor: '#0051A2',
+            color: 'white',
+            '&:hover': {
+              bgcolor: '#003C7E',
+            },
+          }}
+        >
+          リセット
+        </Button>
+      </Box>
     </Paper>
   );
 };
