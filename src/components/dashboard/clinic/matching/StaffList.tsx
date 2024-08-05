@@ -3,11 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Pagination, Box, Typography, CircularProgress } from '@mui/material';
 import StaffCard from './StaffCard';
-import { StaffInfo } from '@/types/supabase';  // supabase.ts ファイルへの正確なパスを指定してください
+import { StaffInfo } from '@/types/supabase';
 import { getStaffList } from '@/app/actions/staff';
 
-const StaffList: React.FC = () => {
+interface StaffListProps {
+  selectedProfessions: string[];
+  selectedExperience: string;
+  selectedSkills: string[];
+}
+
+const StaffList: React.FC<StaffListProps> = ({ selectedProfessions, selectedExperience, selectedSkills }) => {
   const [staffList, setStaffList] = useState<StaffInfo[] | null>(null);
+  const [filteredStaffList, setFilteredStaffList] = useState<StaffInfo[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -21,6 +28,7 @@ const StaffList: React.FC = () => {
           setError(error);
         } else {
           setStaffList(fetchedStaffList);
+          setFilteredStaffList(fetchedStaffList);
         }
       } catch (err) {
         console.error('Failed to fetch staff list:', err);
@@ -31,6 +39,61 @@ const StaffList: React.FC = () => {
     }
     fetchStaffList();
   }, []);
+
+  useEffect(() => {
+    if (staffList) {
+      let filtered = staffList;
+
+      // 職種でフィルタリング
+      if (selectedProfessions.length > 0) {
+        filtered = filtered.filter(staff => 
+          staff.profession.some(p => selectedProfessions.includes(p))
+        );
+      }
+
+      // 経験年数でフィルタリング
+      if (selectedExperience !== '選択してください') {
+        filtered = filtered.filter(staff => {
+          const staffExperience = parseInt(staff.experience_years);
+          switch (selectedExperience) {
+            case '1年未満':
+              return staffExperience < 1;
+            case '1年以上':
+              return staffExperience >= 1;
+            case '2年以上':
+              return staffExperience >= 2;
+            case '3年以上':
+              return staffExperience >= 3;
+            case '4年以上':
+              return staffExperience >= 4;
+            case '5年以上':
+              return staffExperience >= 5;
+            case '6~10年':
+              return staffExperience >= 6 && staffExperience <= 10;
+            case '11年~15年':
+              return staffExperience >= 11 && staffExperience <= 15;
+            case '16年以上':
+              return staffExperience >= 16;
+            default:
+              return true;
+          }
+        });
+      }
+
+      // スキルでフィルタリング
+      if (selectedSkills.length > 0) {
+        filtered = filtered.filter(staff => {
+          const result = selectedSkills.every(skill => 
+            staff.skills.includes(skill)
+          );
+          return result;
+        });
+      }
+  
+      setFilteredStaffList(filtered);
+      setPage(1);
+    }
+  }, [selectedProfessions, selectedExperience, selectedSkills, staffList]);
 
   const handleChangePage = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
@@ -52,15 +115,15 @@ const StaffList: React.FC = () => {
     );
   }
 
-  if (!staffList || staffList.length === 0) {
+  if (!filteredStaffList || filteredStaffList.length === 0) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-        <Typography variant="h6">スタッフが見つかりませんでした。</Typography>
+        <Typography variant="h6">条件に合うスタッフが見つかりませんでした。</Typography>
       </Box>
     );
   }
 
-  const paginatedStaff = staffList.slice((page - 1) * staffPerPage, page * staffPerPage);
+  const paginatedStaff = filteredStaffList.slice((page - 1) * staffPerPage, page * staffPerPage);
 
   return (
     <Box sx={{ flexGrow: 1, m: 2 }}>
@@ -73,7 +136,7 @@ const StaffList: React.FC = () => {
       </Grid>
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <Pagination
-          count={Math.ceil(staffList.length / staffPerPage)}
+          count={Math.ceil(filteredStaffList.length / staffPerPage)}
           page={page}
           onChange={handleChangePage}
           color="primary"

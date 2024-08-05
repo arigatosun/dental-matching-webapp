@@ -29,7 +29,8 @@ export type Json =
     experience_years: string;
     min_hourly_rate: number;
     max_hourly_rate: number;
-    profile_photo_url: string; 
+    profile_photo_url: string;
+    skills: string[]; // 新しく追加
   }
   
   
