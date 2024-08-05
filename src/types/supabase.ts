@@ -20,6 +20,18 @@ export type Json =
     location: string;
     experience: string;
   }
+
+  export interface StaffInfo {
+    id: string;
+    nickname: string;
+    profession: string[];
+    desired_work_location: string;
+    experience_years: string;
+    min_hourly_rate: number;
+    max_hourly_rate: number;
+    profile_photo_url: string; 
+  }
+  
   
 
 export interface Database {
@@ -269,6 +281,7 @@ export interface Database {
           tbi: boolean
           created_at: string
           updated_at: string
+          experience_years: string;
         }
         Insert: {
           id?: string
@@ -288,6 +301,7 @@ export interface Database {
           tbi?: boolean
           created_at?: string
           updated_at?: string
+          experience_years: string;
         }
         Update: {
           id?: string
@@ -307,6 +321,7 @@ export interface Database {
           tbi?: boolean
           created_at?: string
           updated_at?: string
+          experience_years: string;
         }
       }
       staff_auxiliary_skills: {

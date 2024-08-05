@@ -26,8 +26,11 @@ export default function ProfileUploadWrapper() {
     
     try {
       const supabase = getSupabase();
-      const user = await getDevelopmentUser('staff');
-      
+      const user = await getDevelopmentUser('staff', {
+        email: 'dev-staff-user6@example.com',
+        password: 'devpassword'
+      });
+
       if (!user) {
         throw new Error('開発用ユーザーの取得に失敗しました。');
       }

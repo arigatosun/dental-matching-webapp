@@ -194,7 +194,7 @@ export const PreferencesExperienceForm: React.FC<PreferencesExperienceFormProps>
     event.preventDefault();
     try {
       const user = await getDevelopmentUser('staff', {
-        email: 'dev-staff-user1@example.com',
+        email: 'dev-staff-user6@example.com',
         password: 'devpassword'
       });
       if (!user) {

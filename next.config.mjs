@@ -33,6 +33,7 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    domains: ['mgayjaelvxbjrqyvflqx.supabase.co'], // この行を追加
   },
   ...(isStaticExport === 'true' && {
     output: 'export',

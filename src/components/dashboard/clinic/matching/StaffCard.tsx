@@ -6,24 +6,17 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import WorkIcon from '@mui/icons-material/Work';
 import PersonIcon from '@mui/icons-material/Person';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import RepeatIcon from '@mui/icons-material/Repeat';
 
-interface StaffCardProps {
-  nickname: string;
-  desiredSalary: number;
-  matchCount: number;
-  location: string;
-  experience: string;
-  profession: string;
-}
+import { StaffInfo } from '@/types/supabase';  // supabase.ts ファイルへの正確なパスを指定してください
 
-const StaffCard: React.FC<StaffCardProps> = ({
+const StaffCard: React.FC<StaffInfo> = ({
   nickname,
-  desiredSalary,
-  matchCount,
-  location,
-  experience,
   profession,
+  desired_work_location,
+  experience_years,
+  min_hourly_rate,
+  max_hourly_rate,
+  profile_photo_url,
 }) => {
   return (
     <Card sx={{ maxWidth: 345, m: 2 }}>
@@ -37,15 +30,14 @@ const StaffCard: React.FC<StaffCardProps> = ({
         display: 'flex', 
         justifyContent: 'center', 
         alignItems: 'center',
-        borderRadius: '50%', // コンテナを円形にする
-        overflow: 'hidden', // はみ出た部分を隠す
+        borderRadius: '50%',
+        overflow: 'hidden',
       }}>
         <Image
-          src="/images/avater/no-image-profile-photo.svg"
+          src={profile_photo_url || "/images/avater/no-image-profile-photo.svg"}
           alt={nickname}
           layout="fill"
-          objectFit="contain" // アスペクト比を維持しつつ、コンテナ内に収める
-          style={{ padding: '10px' }} // 画像の周りに少し余白を設ける
+          objectFit="cover"
         />
       </Box>
       <CardContent sx={{ pt: 2 }}>
@@ -55,31 +47,25 @@ const StaffCard: React.FC<StaffCardProps> = ({
         <Box display="flex" alignItems="center" mb={0.5}>
           <PersonIcon fontSize="small" />
           <Typography variant="body2" ml={1}>
-            職種：{profession}
+            職種：{profession.join(', ')}
           </Typography>
         </Box>
         <Box display="flex" alignItems="center" mb={0.5}>
           <LocationOnIcon fontSize="small" />
           <Typography variant="body2" ml={1}>
-            希望勤務地：{location}
+            希望勤務地：{desired_work_location}
           </Typography>
         </Box>
         <Box display="flex" alignItems="center" mb={0.5}>
           <WorkIcon fontSize="small" />
           <Typography variant="body2" ml={1}>
-            経験年数：{experience}
+            経験年数：{experience_years}
           </Typography>
         </Box>
         <Box display="flex" alignItems="center" mb={0.5}>
           <AttachMoneyIcon fontSize="small" />
           <Typography variant="body2" ml={1}>
-            希望時給: ¥{desiredSalary.toLocaleString()}
-          </Typography>
-        </Box>
-        <Box display="flex" alignItems="center" mb={0.5}>
-          <RepeatIcon fontSize="small" />
-          <Typography variant="body2" ml={1}>
-            マッチ回数: {matchCount}回
+            希望時給: ¥{min_hourly_rate.toLocaleString()} ～ ¥{max_hourly_rate.toLocaleString()}
           </Typography>
         </Box>
       </CardContent>
