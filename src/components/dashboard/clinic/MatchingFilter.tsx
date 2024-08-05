@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import {
   Grid,
   Paper,
@@ -56,7 +56,11 @@ const experienceOptions: string[] = [
   '5年以上', '6~10年', '11年~15年', '16年以上',
 ];
 
-const MatchingFilter: React.FC = () => {
+interface MatchingFilterProps {
+  onFilterChange: (professions: string[]) => void;
+}
+
+const MatchingFilter: React.FC<MatchingFilterProps> = ({ onFilterChange }) => {
   const [professions, setProfessions] = useState<string[]>([]);
   const [date, setDate] = useState<string>('');
   const [skills, setSkills] = useState<string[]>([]);
@@ -91,8 +95,15 @@ const MatchingFilter: React.FC = () => {
     setExperience('選択してください');
   };
 
+  
+
   // すべてのスキルを1つの配列にフラット化
   const allSkills = Object.values(skillOptions).flat();
+
+  useEffect(() => {
+    onFilterChange(professions);
+  }, [professions, onFilterChange]);
+  
 
   return (
     <Paper elevation={3} sx={{ p: 3, mb: 3, position: 'relative', pb: 7 }}>

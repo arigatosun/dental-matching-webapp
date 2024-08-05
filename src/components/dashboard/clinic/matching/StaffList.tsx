@@ -3,11 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Pagination, Box, Typography, CircularProgress } from '@mui/material';
 import StaffCard from './StaffCard';
-import { StaffInfo } from '@/types/supabase';  // supabase.ts ファイルへの正確なパスを指定してください
+import { StaffInfo } from '@/types/supabase';
 import { getStaffList } from '@/app/actions/staff';
 
-const StaffList: React.FC = () => {
+interface StaffListProps {
+  selectedProfessions: string[];
+}
+
+const StaffList: React.FC<StaffListProps> = ({ selectedProfessions }) => {
   const [staffList, setStaffList] = useState<StaffInfo[] | null>(null);
+  const [filteredStaffList, setFilteredStaffList] = useState<StaffInfo[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -21,6 +26,7 @@ const StaffList: React.FC = () => {
           setError(error);
         } else {
           setStaffList(fetchedStaffList);
+          setFilteredStaffList(fetchedStaffList);
         }
       } catch (err) {
         console.error('Failed to fetch staff list:', err);
@@ -31,6 +37,20 @@ const StaffList: React.FC = () => {
     }
     fetchStaffList();
   }, []);
+
+  useEffect(() => {
+    if (staffList) {
+      if (selectedProfessions.length === 0) {
+        setFilteredStaffList(staffList);
+      } else {
+        const filtered = staffList.filter(staff => 
+          staff.profession.some(p => selectedProfessions.includes(p))
+        );
+        setFilteredStaffList(filtered);
+      }
+      setPage(1);
+    }
+  }, [selectedProfessions, staffList]);
 
   const handleChangePage = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
@@ -52,7 +72,7 @@ const StaffList: React.FC = () => {
     );
   }
 
-  if (!staffList || staffList.length === 0) {
+  if (!filteredStaffList || filteredStaffList.length === 0) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
         <Typography variant="h6">スタッフが見つかりませんでした。</Typography>
@@ -60,7 +80,7 @@ const StaffList: React.FC = () => {
     );
   }
 
-  const paginatedStaff = staffList.slice((page - 1) * staffPerPage, page * staffPerPage);
+  const paginatedStaff = filteredStaffList.slice((page - 1) * staffPerPage, page * staffPerPage);
 
   return (
     <Box sx={{ flexGrow: 1, m: 2 }}>
@@ -73,7 +93,7 @@ const StaffList: React.FC = () => {
       </Grid>
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <Pagination
-          count={Math.ceil(staffList.length / staffPerPage)}
+          count={Math.ceil(filteredStaffList.length / staffPerPage)}
           page={page}
           onChange={handleChangePage}
           color="primary"

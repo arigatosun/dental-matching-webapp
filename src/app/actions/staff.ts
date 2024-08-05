@@ -1,11 +1,12 @@
 // app/actions/staff.ts
+// app/actions/staff.ts
 'use server';
 
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { Database, StaffInfo } from '@/types/supabase';
 
-export async function getStaffList(): Promise<{ staffList: StaffInfo[] | null; error: string | null }> {
+export async function getStaffList(professions?: string[]): Promise<{ staffList: StaffInfo[] | null; error: string | null }> {
   try {
     const supabase = createServerComponentClient<Database>({ cookies });
     console.log('Fetching staff data...');
@@ -21,9 +22,15 @@ export async function getStaffList(): Promise<{ staffList: StaffInfo[] | null; e
     }
 
     // Fetch staff_preferences data
-    const { data: preferencesData, error: preferencesError } = await supabase
+    let preferencesQuery = supabase
       .from('staff_preferences')
       .select('user_id, desired_profession, desired_work_location, min_hourly_rate, max_hourly_rate');
+
+    if (professions && professions.length > 0) {
+      preferencesQuery = preferencesQuery.contains('desired_profession', professions);
+    }
+
+    const { data: preferencesData, error: preferencesError } = await preferencesQuery;
 
     if (preferencesError) {
       console.error('Error fetching preferences data:', preferencesError);
@@ -61,7 +68,9 @@ export async function getStaffList(): Promise<{ staffList: StaffInfo[] | null; e
     }
 
     // Combine the data
-    const staffList: StaffInfo[] = staffData.map((staff) => {
+    const staffList: StaffInfo[] = staffData
+    .filter(staff => preferencesData?.some(p => p.user_id === staff.user_id))
+    .map((staff) => {
       const preferences = preferencesData?.find(p => p.user_id === staff.user_id);
       const skills = skillsData?.find(s => s.user_id === staff.user_id);
       const photo = photosData?.find(p => p.user_id === staff.user_id);
@@ -78,11 +87,10 @@ export async function getStaffList(): Promise<{ staffList: StaffInfo[] | null; e
       };
     });
 
-    console.log('Processed staff list:', staffList);
-
-    return { staffList, error: null };
-  } catch (error) {
-    console.error('Unexpected error in getStaffList:', error);
-    return { staffList: null, error: 'An unexpected error occurred' };
-  }
+  console.log('Processed staff list:', staffList);
+  return { staffList, error: null };
+} catch (error) {
+  console.error('Unexpected error in getStaffList:', error);
+  return { staffList: null, error: 'An unexpected error occurred' };
+}
 }
