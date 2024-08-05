@@ -9,9 +9,10 @@ import { getStaffList } from '@/app/actions/staff';
 interface StaffListProps {
   selectedProfessions: string[];
   selectedExperience: string;
+  selectedSkills: string[];
 }
 
-const StaffList: React.FC<StaffListProps> = ({ selectedProfessions, selectedExperience }) => {
+const StaffList: React.FC<StaffListProps> = ({ selectedProfessions, selectedExperience, selectedSkills }) => {
   const [staffList, setStaffList] = useState<StaffInfo[] | null>(null);
   const [filteredStaffList, setFilteredStaffList] = useState<StaffInfo[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -79,10 +80,20 @@ const StaffList: React.FC<StaffListProps> = ({ selectedProfessions, selectedExpe
         });
       }
 
+      // スキルでフィルタリング
+      if (selectedSkills.length > 0) {
+        filtered = filtered.filter(staff => {
+          const result = selectedSkills.every(skill => 
+            staff.skills.includes(skill)
+          );
+          return result;
+        });
+      }
+  
       setFilteredStaffList(filtered);
       setPage(1);
     }
-  }, [selectedProfessions, selectedExperience, staffList]);
+  }, [selectedProfessions, selectedExperience, selectedSkills, staffList]);
 
   const handleChangePage = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);

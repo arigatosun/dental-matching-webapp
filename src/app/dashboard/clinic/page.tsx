@@ -8,10 +8,13 @@ import { Box, Typography } from '@mui/material';
 export default function Page() {
   const [selectedProfessions, setSelectedProfessions] = useState<string[]>([]);
   const [selectedExperience, setSelectedExperience] = useState<string>('選択してください');
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
-  const handleFilterChange = (professions: string[], experience: string) => {
+  const handleFilterChange = (professions: string[], experience: string, skills: string[]) => {
+    console.log('handleFilterChange called with:', professions, experience, skills);
     setSelectedProfessions(professions);
     setSelectedExperience(experience);
+    setSelectedSkills(skills);
   };
 
   return (
@@ -22,7 +25,11 @@ export default function Page() {
       <Typography variant="h4" sx={{ mb: 3 }}>
         マッチング結果の一覧表示
       </Typography>
-      <StaffList selectedProfessions={selectedProfessions} selectedExperience={selectedExperience} />
+      <StaffList 
+        selectedProfessions={selectedProfessions} 
+        selectedExperience={selectedExperience}
+        selectedSkills={selectedSkills}
+      />
     </Box>
   );
 }
