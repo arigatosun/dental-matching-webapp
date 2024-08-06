@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '@/utils/supabase';
+import { useSupabaseClient } from '@/utils/supabase';
 
 export default function RegistrationHandler({ onVerified }: { onVerified: (email: string) => void }) {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const supabase = useSupabaseClient();
 
   useEffect(() => {
     const token = searchParams.get('token');

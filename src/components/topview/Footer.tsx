@@ -1,5 +1,5 @@
-// components/Footer.tsx
-'use client'; 
+'use client';
+
 import React from 'react';
 import { Box, Typography, Link } from '@mui/material';
 
@@ -13,8 +13,12 @@ const Footer: React.FC = () => {
         </Link>{' '}
         {new Date().getFullYear()}
         {' | '}
-        <Link color="inherit" href="/privacy-policy">
+        <Link color="inherit" href="/top/privacy-policy">
           プライバシーポリシー
+        </Link>
+        {' | '}
+        <Link color="inherit" href="/top/legal">
+          特定商取引法に基づく表記
         </Link>
       </Typography>
     </Box>
