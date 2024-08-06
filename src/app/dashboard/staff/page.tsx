@@ -1,10 +1,11 @@
+import { Metadata } from 'next';
 import { CONFIG } from '@/config-global';
-import { BlankView } from '@/sections/blank/view';
+import StaffDashboard from '@/components/dashboard/staff/topview/StaffDashboard';
 
-// ----------------------------------------------------------------------
-
-export const metadata = { title: `Dashboard - ${CONFIG.site.name}` };
+export const metadata: Metadata = {
+  title: `スタッフダッシュボード - ${CONFIG.site.name}`,
+};
 
 export default function Page() {
-  return <BlankView title="歯科スタッフトップページ" />;
+  return <StaffDashboard />;
 }
