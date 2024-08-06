@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Grid,
   Card,
@@ -13,46 +13,29 @@ import {
   Alert,
   Paper,
   Link,
+  CircularProgress,
 } from '@mui/material';
-
-interface ClinicData {
-  clinicName: string;
-  directorName: string;
-  phoneNumber: string;
-  prefecture: string;
-  city: string;
-  address: string;
-  nearestStation: string;
-  walkingTimeFromStation: string;
-  introduction: string;
-  clinicUrl: string;
-  photos: {
-    [key: string]: string;
-  };
-}
-
-const initialData: ClinicData = {
-  clinicName: "医療法人 アリガトウ歯科",
-  directorName: "歯科 太郎",
-  phoneNumber: "06-6426-7474",
-  prefecture: "兵庫県",
-  city: "神田北通",
-  address: "6丁目3番1号 西村ビル2F",
-  nearestStation: "○○線 ○○駅",
-  walkingTimeFromStation: "5分",
-  introduction: "当院クリニックは、地域の皆様に信頼される歯科医療を目指し、最新の技術と温かいホスピタリティで患者様をお迎えしています。私たちは、患者様一人ひとりに寄り添い最適な治療を提供することを第一に考え、丁寧なカウンセリングと確かな技術で皆様の歯の健康をサポートいたします。\n\n当院では、歯科衛生士との連携が高まるような環境づくりを意識しています。\n歯科衛生士の皆様には、患者様の口腔衛生を守る重要な役割を担っていただいております。私たちと一緒に、地域の皆様の健康な笑顔を守るチームの一員となっていただければ幸いです。",
-  clinicUrl: "https://www.arigatou-dental.com",
-  photos: {
-    director: "/images/profile-sample/directer.jpg",
-    exterior: "/images/profile-sample/gaikan-image.jpg",
-    reception: "/images/profile-sample/uketsuke.jpg",
-    unit: "/images/profile-sample/unit-images.jpg"
-  }
-};
+import { getClinicProfile, updateClinicProfile, ClinicProfileData } from '@/app/actions/clinic-profile';
+import { useAuthContext } from '@/auth/hooks/use-auth-context';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 export default function ProfileTab() {
-  const [clinicData, setClinicData] = useState<ClinicData>(initialData);
+  // クリニックデータの状態
+  const [clinicData, setClinicData] = useState<ClinicProfileData | null>(null);
+  // スナックバーの開閉状態
   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
+  // スナックバーのメッセージ
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  // スナックバーの種類（成功またはエラー）
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  // ローディング状態
+  const [loading, setLoading] = useState(true);
+  // エラー状態
+  const [error, setError] = useState<string | null>(null);
+  // 認証コンテキストからユーザー情報を取得
+  const { user } = useAuthContext();
+  
+  // ファイル入力用のref
   const fileInputRefs = {
     director: useRef<HTMLInputElement>(null),
     reception: useRef<HTMLInputElement>(null),
@@ -60,11 +43,54 @@ export default function ProfileTab() {
     unit: useRef<HTMLInputElement>(null),
   };
 
-  const handleSave = () => {
-    console.log('Saving data:', clinicData);
-    setIsSnackbarOpen(true);
+  // コンポーネントマウント時にクリニックプロフィールを取得
+  useEffect(() => {
+    async function fetchClinicProfile() {
+      if (user) {
+        try {
+          const { profile, error } = await getClinicProfile(user.id);
+          if (error) {
+            setError(error);
+          } else {
+            setClinicData(profile);
+          }
+        } catch (err) {
+          console.error('Failed to fetch clinic profile:', err);
+          setError('An unexpected error occurred');
+        } finally {
+          setLoading(false);
+        }
+      }
+    }
+    fetchClinicProfile();
+  }, [user]);
+
+  // 保存ボタンのハンドラー
+  const handleSave = async () => {
+    if (clinicData && user) {
+      setLoading(true);
+      try {
+        const { success, error } = await updateClinicProfile(user.id, clinicData);
+        if (success) {
+          setSnackbarMessage('変更が保存されました！');
+          setSnackbarSeverity('success');
+        } else {
+          setSnackbarMessage(error || '変更の保存に失敗しました');
+          setSnackbarSeverity('error');
+        }
+        setIsSnackbarOpen(true);
+      } catch (err) {
+        console.error('Error saving profile:', err);
+        setSnackbarMessage('予期せぬエラーが発生しました');
+        setSnackbarSeverity('error');
+        setIsSnackbarOpen(true);
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
+  // スナックバーを閉じるハンドラー
   const handleCloseSnackbar = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
@@ -72,35 +98,53 @@ export default function ProfileTab() {
     setIsSnackbarOpen(false);
   };
 
+  // 写真アップロードのハンドラー
   const handlePhotoUpload = (photoType: keyof typeof fileInputRefs) => {
     fileInputRefs[photoType].current?.click();
   };
 
-  const handleFileChange = (photoType: keyof typeof fileInputRefs) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  // ファイル選択時のハンドラー
+  const handleFileChange = (photoType: keyof typeof fileInputRefs) => async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
+    if (file && clinicData && user) {
+      try {
+        const supabase = createClientComponentClient();
+        const { data, error } = await supabase.storage
+          .from('clinic-photos')
+          .upload(`${user.id}/${photoType}.jpg`, file, { upsert: true });
+
+        if (error) throw error;
+
+        const { data: publicUrlData } = supabase.storage
+          .from('clinic-photos')
+          .getPublicUrl(`${user.id}/${photoType}.jpg`);
+
         setClinicData(prevData => ({
-          ...prevData,
+          ...prevData!,
           photos: {
-            ...prevData.photos,
-            [photoType]: reader.result as string,
+            ...prevData!.photos,
+            [photoType]: publicUrlData.publicUrl,
           },
         }));
-      };
-      reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        setSnackbarMessage('画像のアップロードに失敗しました');
+        setSnackbarSeverity('error');
+        setIsSnackbarOpen(true);
+      }
     }
   };
 
+  // 入力フィールド変更のハンドラー
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setClinicData(prevData => ({
-      ...prevData,
+      ...prevData!,
       [name]: value,
     }));
   };
 
+  // 写真表示用のコンポーネント
   const renderPhoto = (photoType: keyof typeof fileInputRefs, title: string, size: string) => (
     <Box 
       sx={{ 
@@ -113,7 +157,7 @@ export default function ProfileTab() {
     >
       <CardMedia
         component="img"
-        image={clinicData.photos[photoType]}
+        image={clinicData?.photos[photoType] || ''}
         alt={title}
         sx={{ 
           width: '100%', 
@@ -166,6 +210,22 @@ export default function ProfileTab() {
     </Box>
   );
 
+  // ローディング中の表示
+  if (loading) {
+    return <CircularProgress />;
+  }
+
+  // エラー時の表示
+  if (error) {
+    return <Typography color="error">{error}</Typography>;
+  }
+
+  // データが無い場合の表示
+  if (!clinicData) {
+    return <Typography>No clinic data available</Typography>;
+  }
+
+  // メインのレンダリング
   return (
     <Box sx={{ width: '100%', mt: 2 }}>
       <Grid container spacing={3}>
@@ -315,8 +375,8 @@ export default function ProfileTab() {
         </Button>
       </Box>
       <Snackbar open={isSnackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
-          変更が保存されました！
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </Box>

@@ -9,8 +9,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import { useTheme } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 
-// ----------------------------------------------------------------------
-
+// AccountButtonのプロパティ型定義
 export type AccountButtonProps = IconButtonProps & {
   open: boolean;
   photoURL: string;
@@ -20,6 +19,7 @@ export type AccountButtonProps = IconButtonProps & {
 export function AccountButton({ open, photoURL, displayName, sx, ...other }: AccountButtonProps) {
   const theme = useTheme();
 
+  // フォールバック用のアバター
   const renderFallback = (
     <Avatar
       sx={{

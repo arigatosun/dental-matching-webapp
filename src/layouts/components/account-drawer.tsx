@@ -17,8 +17,8 @@ import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
 
+// AccountDrawerのプロパティ型定義
 export type AccountDrawerProps = {
   data?: {
     label: string;
@@ -37,6 +37,7 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // ユーザー情報の取得
   useEffect(() => {
     async function fetchUserInfo() {
       try {
@@ -56,14 +57,17 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
     fetchUserInfo();
   }, []);
 
+  // ドロワーを開く
   const handleOpenDrawer = useCallback(() => {
     setOpen(true);
   }, []);
 
+  // ドロワーを閉じる
   const handleCloseDrawer = useCallback(() => {
     setOpen(false);
   }, []);
 
+  // メニューアイテムクリック時の処理
   const handleClickItem = useCallback(
     (path: string) => {
       handleCloseDrawer();
@@ -72,10 +76,12 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
     [handleCloseDrawer, router]
   );
 
+  // ローディング中の表示
   if (loading) {
     return <CircularProgress />;
   }
 
+  // アバターのレンダリング
   const renderAvatar = (
     <AnimateAvatar
       width={96}
