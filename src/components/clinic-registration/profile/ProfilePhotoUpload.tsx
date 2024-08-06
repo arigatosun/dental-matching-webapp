@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -184,6 +184,36 @@ export function ProfilePhotoUploadView({ handleNext, handleSkip }: ProfilePhotoU
     reception: '',
   });
   const [uploading, setUploading] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const createOrGetUser = async () => {
+      const email = 'dev-clinic2@example.com';
+      const password = 'devpassword';
+
+      try {
+        const newUser = await getDevelopmentUser('clinic', {
+          email,
+          password
+        });
+
+        if (newUser) {
+          setUser(newUser);
+          console.log('User created or retrieved:', newUser);
+        } else {
+          throw new Error('Failed to create or retrieve user');
+        }
+      } catch (err) {
+        console.error('Error creating or retrieving user:', err);
+        setError('ユーザーの作成または取得に失敗しました。');
+      }
+    };
+
+    if (process.env.NODE_ENV === 'development') {
+      createOrGetUser();
+    }
+  }, []);
 
   const handleOpenPopup = () => setOpenPopup(true);
   const handleClosePopup = () => setOpenPopup(false);
@@ -195,8 +225,19 @@ export function ProfilePhotoUploadView({ handleNext, handleSkip }: ProfilePhotoU
   const handleSubmit = async () => {
     setUploading(true);
     try {
-      const user = await getDevelopmentUser('clinic');
-      if (!user) {
+      let currentUser;
+      if (process.env.NODE_ENV === 'development') {
+        if (!user) {
+          throw new Error('Development user not created or retrieved');
+        }
+        currentUser = user;
+      } else {
+        const supabase = getSupabase();
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        currentUser = authUser;
+      }
+
+      if (!currentUser) {
         throw new Error('User not found');
       }
 
@@ -204,7 +245,7 @@ export function ProfilePhotoUploadView({ handleNext, handleSkip }: ProfilePhotoU
       const { data, error } = await supabase
         .from('clinic_photos')
         .upsert({
-          user_id: user.id,
+          user_id: currentUser.id,
           director_photo_url: photos.director,
           exterior_photo_url: photos.exterior,
           unit_photo_url: photos.unit,
@@ -218,7 +259,7 @@ export function ProfilePhotoUploadView({ handleNext, handleSkip }: ProfilePhotoU
       handleNext();
     } catch (error) {
       console.error('Error saving photos:', error);
-      // エラーハンドリングを追加（例：ユーザーに通知する）
+      setError('写真の保存中にエラーが発生しました。');
     } finally {
       setUploading(false);
     }

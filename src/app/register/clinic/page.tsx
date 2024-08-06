@@ -1,19 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Stepper, 
   Step, 
   StepLabel, 
   Typography,
-  SelectChangeEvent
+  SelectChangeEvent,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { BasicInfoForm } from '@/components/clinic-registration/BasicInfoForm';
 import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-
 import { getDevelopmentUser } from '@/utils/auth-helper';
 
 const steps = ['基本情報', 'プロフィール写真登録', 'マッチング条件設定', '事前同意事項作成', '医院証明書提出', '利用規約・同意'];
@@ -51,6 +52,8 @@ export default function ClinicRegistration() {
   const [activeStep, setActiveStep] = useState(0);
   const router = useRouter();
   const supabase = createClientComponentClient();
+  const [user, setUser] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<ClinicBasicInfo>({
     clinic_name: '',
@@ -81,6 +84,34 @@ export default function ClinicRegistration() {
     walking_time_from_station: '',
   });
 
+  useEffect(() => {
+    const createOrGetUser = async () => {
+      const email = 'dev-clinic2@example.com';
+      const password = 'devpassword';
+
+      try {
+        const newUser = await getDevelopmentUser('clinic', {
+          email,
+          password
+        });
+
+        if (newUser) {
+          setUser(newUser);
+          console.log('User created or retrieved:', newUser);
+        } else {
+          throw new Error('Failed to create or retrieve user');
+        }
+      } catch (err) {
+        console.error('Error creating or retrieving user:', err);
+        setError('ユーザーの作成または取得に失敗しました。');
+      }
+    };
+
+    if (process.env.NODE_ENV === 'development') {
+      createOrGetUser();
+    }
+  }, []);
+
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
   ) => {
@@ -110,26 +141,29 @@ export default function ClinicRegistration() {
 
   const handleNext = async () => {
     try {
-      let user;
+      let currentUser;
       if (process.env.NODE_ENV === 'development') {
-        user = await getDevelopmentUser('clinic'); // 'clinic' を指定
+        if (!user) {
+          throw new Error('Development user not created or retrieved');
+        }
+        currentUser = user;
       } else {
         const { data: { user: authUser } } = await supabase.auth.getUser();
-        user = authUser;
+        currentUser = authUser;
       }
   
-      if (!user) throw new Error('User not found');
+      if (!currentUser) throw new Error('User not found');
 
       const { data, error } = await supabase
-      .from('clinic_basic_info')
-      .upsert({
-        user_id: user.id,
-        ...formData,
-        business_hours_start: formData.business_hours_start?.toISOString(),
-        business_hours_end: formData.business_hours_end?.toISOString(),
-        walking_time_from_station: parseInt(formData.walking_time_from_station),
-      })
-      .select();
+        .from('clinic_basic_info')
+        .upsert({
+          user_id: currentUser.id,
+          ...formData,
+          business_hours_start: formData.business_hours_start?.toISOString(),
+          business_hours_end: formData.business_hours_end?.toISOString(),
+          walking_time_from_station: parseInt(formData.walking_time_from_station),
+        })
+        .select();
 
       if (error) throw error;
 
@@ -141,7 +175,7 @@ export default function ClinicRegistration() {
       if (error instanceof Error) {
         console.error('Error message:', error.message);
       }
-      // TODO: エラー処理を追加（例：エラーメッセージの表示）
+      setError('データの保存中にエラーが発生しました。');
     }
   };
 
@@ -171,6 +205,12 @@ export default function ClinicRegistration() {
         handleTimeChange={handleTimeChange}
         handleNext={handleNext}
       />
+
+      <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
+        <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

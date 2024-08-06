@@ -14,7 +14,7 @@ export default function BasicInfoFormWrapper() {
   const handleNext = async (data: any) => {
     try {
       const user = await getDevelopmentUser('staff', {
-        email: 'dev-staff-user6@example.com',
+        email: 'dev-staff-user7@example.com',
         password: 'devpassword'
       });
     
