@@ -20,7 +20,7 @@ const PrivacyPolicy = () => {
   const theme = useTheme();
 
   const PolicySection = ({ title, content }: { title: string; content: React.ReactNode }) => (
-    <Accordion>
+    <Accordion defaultExpanded>
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}
         aria-controls={`panel-${title}-content`}

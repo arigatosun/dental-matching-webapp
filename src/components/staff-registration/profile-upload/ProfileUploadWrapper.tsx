@@ -27,7 +27,7 @@ export default function ProfileUploadWrapper() {
     try {
       const supabase = getSupabase();
       const user = await getDevelopmentUser('staff', {
-        email: 'dev-staff-user6@example.com',
+        email: 'dev-staff-user7@example.com',
         password: 'devpassword'
       });
 
