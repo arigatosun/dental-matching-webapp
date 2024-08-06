@@ -14,28 +14,21 @@ import {
   Paper,
   Link,
   CircularProgress,
+  InputAdornment,
 } from '@mui/material';
 import { getClinicProfile, updateClinicProfile, ClinicProfileData } from '@/app/actions/clinic-profile';
 import { useAuthContext } from '@/auth/hooks/use-auth-context';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 export default function ProfileTab() {
-  // クリニックデータの状態
   const [clinicData, setClinicData] = useState<ClinicProfileData | null>(null);
-  // スナックバーの開閉状態
   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
-  // スナックバーのメッセージ
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  // スナックバーの種類（成功またはエラー）
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
-  // ローディング状態
   const [loading, setLoading] = useState(true);
-  // エラー状態
   const [error, setError] = useState<string | null>(null);
-  // 認証コンテキストからユーザー情報を取得
   const { user } = useAuthContext();
   
-  // ファイル入力用のref
   const fileInputRefs = {
     director: useRef<HTMLInputElement>(null),
     reception: useRef<HTMLInputElement>(null),
@@ -43,7 +36,12 @@ export default function ProfileTab() {
     unit: useRef<HTMLInputElement>(null),
   };
 
-  // コンポーネントマウント時にクリニックプロフィールを取得
+  const [phoneNumber, setPhoneNumber] = useState({
+    part1: '',
+    part2: '',
+    part3: '',
+  });
+
   useEffect(() => {
     async function fetchClinicProfile() {
       if (user) {
@@ -51,8 +49,13 @@ export default function ProfileTab() {
           const { profile, error } = await getClinicProfile(user.id);
           if (error) {
             setError(error);
-          } else {
+          } else if (profile) {  // profile が null でないことを確認
             setClinicData(profile);
+            // 電話番号を分割して設定
+            const [part1 = '', part2 = '', part3 = ''] = profile.phoneNumber.split('-');
+            setPhoneNumber({ part1, part2, part3 });
+          } else {
+            setError('No profile data available');
           }
         } catch (err) {
           console.error('Failed to fetch clinic profile:', err);
@@ -64,8 +67,6 @@ export default function ProfileTab() {
     }
     fetchClinicProfile();
   }, [user]);
-
-  // 保存ボタンのハンドラー
   const handleSave = async () => {
     if (clinicData && user) {
       setLoading(true);
@@ -90,7 +91,6 @@ export default function ProfileTab() {
     }
   };
 
-  // スナックバーを閉じるハンドラー
   const handleCloseSnackbar = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
@@ -98,12 +98,10 @@ export default function ProfileTab() {
     setIsSnackbarOpen(false);
   };
 
-  // 写真アップロードのハンドラー
   const handlePhotoUpload = (photoType: keyof typeof fileInputRefs) => {
     fileInputRefs[photoType].current?.click();
   };
 
-  // ファイル選択時のハンドラー
   const handleFileChange = (photoType: keyof typeof fileInputRefs) => async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && clinicData && user) {
@@ -135,7 +133,6 @@ export default function ProfileTab() {
     }
   };
 
-  // 入力フィールド変更のハンドラー
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setClinicData(prevData => ({
@@ -144,7 +141,15 @@ export default function ProfileTab() {
     }));
   };
 
-  // 写真表示用のコンポーネント
+  const handlePhoneNumberChange = (part: 'part1' | 'part2' | 'part3') => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value;
+    setPhoneNumber(prev => ({ ...prev, [part]: newValue }));
+    setClinicData(prevData => ({
+      ...prevData!,
+      phoneNumber: `${part === 'part1' ? newValue : phoneNumber.part1}-${part === 'part2' ? newValue : phoneNumber.part2}-${part === 'part3' ? newValue : phoneNumber.part3}`,
+    }));
+  };
+
   const renderPhoto = (photoType: keyof typeof fileInputRefs, title: string, size: string) => (
     <Box 
       sx={{ 
@@ -210,22 +215,18 @@ export default function ProfileTab() {
     </Box>
   );
 
-  // ローディング中の表示
   if (loading) {
     return <CircularProgress />;
   }
 
-  // エラー時の表示
   if (error) {
     return <Typography color="error">{error}</Typography>;
   }
 
-  // データが無い場合の表示
   if (!clinicData) {
     return <Typography>No clinic data available</Typography>;
   }
 
-  // メインのレンダリング
   return (
     <Box sx={{ width: '100%', mt: 2 }}>
       <Grid container spacing={3}>
@@ -271,15 +272,33 @@ export default function ProfileTab() {
                   margin="normal"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="医院電話番号"
-                  name="phoneNumber"
-                  value={clinicData.phoneNumber}
-                  onChange={handleInputChange}
-                  margin="normal"
-                />
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" gutterBottom>医院電話番号</Typography>
+                <Box display="flex" alignItems="center">
+                  <TextField
+                    label="電話番号"
+                    value={phoneNumber.part1}
+                    onChange={handlePhoneNumberChange('part1')}
+                    margin="normal"
+                    sx={{ width: '30%', mr: 1 }}
+                  />
+                  <Typography variant="h5">-</Typography>
+                  <TextField
+                    label=""
+                    value={phoneNumber.part2}
+                    onChange={handlePhoneNumberChange('part2')}
+                    margin="normal"
+                    sx={{ width: '30%', mx: 1 }}
+                  />
+                  <Typography variant="h5">-</Typography>
+                  <TextField
+                    label=""
+                    value={phoneNumber.part3}
+                    onChange={handlePhoneNumberChange('part3')}
+                    margin="normal"
+                    sx={{ width: '30%', ml: 1 }}
+                  />
+                </Box>
               </Grid>
             </Grid>
             <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>医院住所</Typography>
@@ -332,6 +351,9 @@ export default function ProfileTab() {
                   value={clinicData.walkingTimeFromStation}
                   onChange={handleInputChange}
                   margin="normal"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">分</InputAdornment>,
+                  }}
                 />
               </Grid>
             </Grid>
