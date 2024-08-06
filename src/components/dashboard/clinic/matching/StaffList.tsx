@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Grid, Pagination, Box, Typography, CircularProgress } from '@mui/material';
+import { Grid, Pagination, Box, Typography, CircularProgress, Container } from '@mui/material';
 import StaffCard from './StaffCard';
 import { StaffInfo } from '@/types/supabase';
 import { getStaffList } from '@/app/actions/staff';
@@ -126,23 +126,44 @@ const StaffList: React.FC<StaffListProps> = ({ selectedProfessions, selectedExpe
   const paginatedStaff = filteredStaffList.slice((page - 1) * staffPerPage, page * staffPerPage);
 
   return (
-    <Box sx={{ flexGrow: 1, m: 2 }}>
-      <Grid container spacing={2}>
-        {paginatedStaff.map((staff) => (
-          <Grid item xs={12} sm={6} md={4} key={staff.id}>
-            <StaffCard {...staff} />
-          </Grid>
-        ))}
-      </Grid>
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <Pagination
-          count={Math.ceil(filteredStaffList.length / staffPerPage)}
-          page={page}
-          onChange={handleChangePage}
-          color="primary"
-        />
+    <Container maxWidth="xl">
+      <Box sx={{ flexGrow: 1, my: 4 }}>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+            <Typography color="error" variant="h6">エラーが発生しました: {error}</Typography>
+          </Box>
+        ) : !filteredStaffList || filteredStaffList.length === 0 ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+            <Typography variant="h6">条件に合うスタッフが見つかりませんでした。</Typography>
+          </Box>
+        ) : (
+          <>
+             <Grid container spacing={3} justifyContent="flex-start">
+              {paginatedStaff.map((staff) => (
+                <Grid item xs={12} sm={6} md={4} key={staff.id}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <StaffCard {...staff} />
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+              <Pagination
+                count={Math.ceil(filteredStaffList.length / staffPerPage)}
+                page={page}
+                onChange={handleChangePage}
+                color="primary"
+                size="large"
+              />
+            </Box>
+          </>
+        )}
       </Box>
-    </Box>
+    </Container>
   );
 };
 
