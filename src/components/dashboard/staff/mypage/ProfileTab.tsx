@@ -28,7 +28,6 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { getStaffProfile, updateStaffProfile, StaffProfileData } from '@/app/actions/staff/profile';
 
 export default function ProfileTab() {
-  // 状態の定義
   const [staffData, setStaffData] = useState<StaffProfileData | null>(null);
   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -37,22 +36,38 @@ export default function ProfileTab() {
   const [isLoading, setIsLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState({
+    part1: '',
+    part2: '',
+    part3: '',
+  });
+  // 新しい郵便番号の state を追加
+  const [postalCode, setPostalCode] = useState({
+    part1: '',
+    part2: '',
+  });
 
-  // 参照の定義
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const phoneInputRefs = {
+    part1: useRef<HTMLInputElement>(null),
+    part2: useRef<HTMLInputElement>(null),
+    part3: useRef<HTMLInputElement>(null),
+  };
+  // 郵便番号の input refs を追加
+  const postalCodeInputRefs = {
+    part1: useRef<HTMLInputElement>(null),
+    part2: useRef<HTMLInputElement>(null),
+  };
 
-  // 認証コンテキストとSupabaseクライアントの取得
   const { user } = useAuthContext();
   const supabase = createClientComponentClient();
 
-  // コンポーネントのマウント時にプロフィールを取得
   useEffect(() => {
     if (user) {
       fetchStaffProfile();
     }
   }, [user]);
 
-  // スタッフプロフィールを取得する関数
   const fetchStaffProfile = async () => {
     if (user) {
       try {
@@ -61,6 +76,14 @@ export default function ProfileTab() {
           throw new Error(error);
         }
         setStaffData(profile);
+        if (profile) {
+          const [part1 = '', part2 = '', part3 = ''] = profile.phoneNumber.split('-');
+          setPhoneNumber({ part1, part2, part3 });
+          
+          // 郵便番号の処理を追加
+          const [postalPart1 = '', postalPart2 = ''] = profile.postalCode.split('-');
+          setPostalCode({ part1: postalPart1, part2: postalPart2 });
+        }
       } catch (error) {
         console.error('Error fetching staff profile:', error);
         setSnackbarMessage('プロフィールの取得に失敗しました');
@@ -72,11 +95,9 @@ export default function ProfileTab() {
     }
   };
 
-  // 変更を保存する関数
   const handleSave = async () => {
     if (user && staffData) {
       try {
-        // プロフィール写真のアップロード
         if (selectedFile) {
           const { data, error } = await supabase.storage
             .from('staff-profile-photos')
@@ -91,8 +112,15 @@ export default function ProfileTab() {
           staffData.profilePhotoUrl = publicUrlData.publicUrl;
         }
 
-        // プロフィール情報の更新
-        const { success, error } = await updateStaffProfile(user.id, staffData);
+        const fullPhoneNumber = `${phoneNumber.part1}-${phoneNumber.part2}-${phoneNumber.part3}`;
+        const fullPostalCode = `${postalCode.part1}-${postalCode.part2}`; // 郵便番号を結合
+        const updatedStaffData = { 
+          ...staffData, 
+          phoneNumber: fullPhoneNumber,
+          postalCode: fullPostalCode // 更新データに郵便番号を追加
+        };
+
+        const { success, error } = await updateStaffProfile(user.id, updatedStaffData);
         if (error) throw new Error(error);
 
         setSnackbarMessage('プロフィールが更新されました！');
@@ -109,7 +137,6 @@ export default function ProfileTab() {
     }
   };
 
-  // スナックバーを閉じる関数
   const handleCloseSnackbar = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
@@ -117,12 +144,10 @@ export default function ProfileTab() {
     setIsSnackbarOpen(false);
   };
 
-  // 写真アップロードボタンのクリックハンドラ
   const handlePhotoUpload = () => {
     fileInputRef.current?.click();
   };
 
-  // ファイル選択時の処理
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -135,7 +160,6 @@ export default function ProfileTab() {
     }
   };
 
-  // 入力フィールドの変更ハンドラ
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setStaffData(prevData => ({
@@ -144,15 +168,47 @@ export default function ProfileTab() {
     }));
   };
 
-  // ローディング中の表示
+  const handlePhoneNumberChange = (part: keyof typeof phoneNumber) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value.replace(/\D/g, '');
+    const maxLength = part === 'part1' ? 3 : 4;
+    
+    if (newValue.length <= maxLength) {
+      setPhoneNumber(prev => ({ ...prev, [part]: newValue }));
+      
+      if (newValue.length === maxLength) {
+        const nextPart = part === 'part1' ? 'part2' : part === 'part2' ? 'part3' : null;
+        if (nextPart) {
+          phoneInputRefs[nextPart].current?.focus();
+        }
+      }
+    }
+  };
+
+  // 郵便番号の入力ハンドラを追加
+  const handlePostalCodeChange = (part: keyof typeof postalCode) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value.replace(/\D/g, '');
+    const maxLength = part === 'part1' ? 3 : 4;
+    
+    if (newValue.length <= maxLength) {
+      setPostalCode(prev => ({ ...prev, [part]: newValue }));
+      
+      if (newValue.length === maxLength) {
+        const nextPart = part === 'part1' ? 'part2' : null;
+        if (nextPart) {
+          postalCodeInputRefs[nextPart].current?.focus();
+        }
+      }
+    }
+  };
+
   if (isLoading) {
     return <CircularProgress />;
   }
 
-  // プロフィールデータがない場合の表示
   if (!staffData) {
     return <Typography>プロフィールデータが利用できません</Typography>;
   }
+
 
   return (
     <Box sx={{ width: '100%', mt: 2 }}>
@@ -235,21 +291,24 @@ export default function ProfileTab() {
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="郵便番号"
-                  name="postalCode"
-                  value={staffData.postalCode}
-                  onChange={handleInputChange}
-                  margin="normal"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LocationOn />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+                <Typography variant="subtitle2" gutterBottom>郵便番号</Typography>
+                <Box display="flex" alignItems="center">
+                  <TextField
+                    inputRef={postalCodeInputRefs.part1}
+                    value={postalCode.part1}
+                    onChange={handlePostalCodeChange('part1')}
+                    inputProps={{ maxLength: 3 }}
+                    sx={{ width: '40%' }}
+                  />
+                  <Typography variant="h5" sx={{ mx: 1 }}>-</Typography>
+                  <TextField
+                    inputRef={postalCodeInputRefs.part2}
+                    value={postalCode.part2}
+                    onChange={handlePostalCodeChange('part2')}
+                    inputProps={{ maxLength: 4 }}
+                    sx={{ width: '50%' }}
+                  />
+                </Box>
               </Grid>
               <Grid item xs={6}>
                 <TextField
@@ -362,7 +421,7 @@ export default function ProfileTab() {
                   margin="normal"
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12}sm={6}>
                 <TextField
                   fullWidth
                   label="ニックネーム"
@@ -373,18 +432,35 @@ export default function ProfileTab() {
                 />
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="subtitle1" sx={{ display: 'flex', alignItems: 'center', mb: 2, mt: 1 }}>
-                  <Phone sx={{ mr: 1, color: 'primary.main' }} /> 電話番号
-                </Typography>
-                <TextField
-                  fullWidth
-                  label="電話番号"
-                  name="phoneNumber"
-                  value={staffData.phoneNumber}
-                  onChange={handleInputChange}
-                  margin="normal"
-                />
-              </Grid>
+        <Typography variant="subtitle1" sx={{ display: 'flex', alignItems: 'center', mb: 2, mt: 1 }}>
+          <Phone sx={{ mr: 1, color: 'primary.main' }} /> 電話番号
+        </Typography>
+        <Box display="flex" alignItems="center">
+          <TextField
+            inputRef={phoneInputRefs.part1}
+            value={phoneNumber.part1}
+            onChange={handlePhoneNumberChange('part1')}
+            inputProps={{ maxLength: 3 }}
+            sx={{ width: '30%' }}
+          />
+          <Typography variant="h5" sx={{ mx: 1 }}>-</Typography>
+          <TextField
+            inputRef={phoneInputRefs.part2}
+            value={phoneNumber.part2}
+            onChange={handlePhoneNumberChange('part2')}
+            inputProps={{ maxLength: 4 }}
+            sx={{ width: '30%' }}
+          />
+          <Typography variant="h5" sx={{ mx: 1 }}>-</Typography>
+          <TextField
+            inputRef={phoneInputRefs.part3}
+            value={phoneNumber.part3}
+            onChange={handlePhoneNumberChange('part3')}
+            inputProps={{ maxLength: 4 }}
+            sx={{ width: '30%' }}
+          />
+        </Box>
+      </Grid>
             </Grid>
             <Box sx={{ mt: 3, mb: 3 }}>
               <Typography variant="subtitle1" sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>

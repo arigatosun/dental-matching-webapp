@@ -83,6 +83,7 @@ export async function getStaffProfile(userId: string): Promise<{ profile: StaffP
       spouseDependency: staffData.spouse_dependency || false,
       desiredWorkLocation: preferencesData?.desired_work_location || '',
       profilePhotoUrl: photoData?.profile_photo_url || '',
+      introduction: staffData.introduction || '',
     };
 
     return { profile, error: null };
@@ -115,6 +116,7 @@ export async function updateStaffProfile(userId: string, profileData: Partial<St
         nearest_station: profileData.nearestStation,
         marital_status: profileData.maritalStatus === 'married',
         spouse_dependency: profileData.spouseDependency,
+        introduction: profileData.introduction,
       })
       .eq('user_id', userId);
 

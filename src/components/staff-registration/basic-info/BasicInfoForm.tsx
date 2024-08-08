@@ -60,6 +60,7 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onNext }) => {
     minHourlyRate: 2500,
     maxHourlyRate: 3500,
     desiredWorkLocation: '',
+    introduction: '', // 自己紹介フィールドを追加
   });
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,7 +85,7 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onNext }) => {
     event.preventDefault();
     try {
       const user = await getDevelopmentUser('staff', {
-        email: 'dev-staff-user7@example.com',
+        email: 'dev-staff@example.com',
         password: 'devpassword'
       });
       if (!user) {
@@ -93,51 +94,55 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onNext }) => {
 
       const supabase = getSupabase();
 
-      // dental_staff テーブルにデータを挿入
-      const { data: dentalStaffData, error: dentalStaffError } = await supabase
-        .from('dental_staff')
-        .upsert({
-          user_id: user.id,
-          last_name: formData.lastName,
-          first_name: formData.firstName,
-          last_name_kana: formData.lastNameKana,
-          first_name_kana: formData.firstNameKana,
-          nickname: formData.nickname,
-          phone_number: `${formData.phoneNumber1}-${formData.phoneNumber2}-${formData.phoneNumber3}`,
-          postal_code: formData.postalCode,
-          prefecture: formData.prefecture,
-          city: formData.city,
-          address: formData.address,
-          building_name: formData.buildingName,
-          nearest_station: formData.nearestStation,
-          marital_status: formData.maritalStatus === 'yes',
-          spouse_dependency: formData.spouseDependency === 'yes',
-        })
-        .select();
+      // dental_staff テーブルの更新
+      const { error: dentalStaffError } = await supabase
+      .from('dental_staff')
+      .upsert({
+        user_id: user.id,
+        last_name: formData.lastName,
+        first_name: formData.firstName,
+        last_name_kana: formData.lastNameKana,
+        first_name_kana: formData.firstNameKana,
+        nickname: formData.nickname,
+        phone_number: `${formData.phoneNumber1}-${formData.phoneNumber2}-${formData.phoneNumber3}`,
+        postal_code: formData.postalCode,
+        prefecture: formData.prefecture,
+        city: formData.city,
+        address: formData.address,
+        building_name: formData.buildingName,
+        nearest_station: formData.nearestStation,
+        marital_status: formData.maritalStatus === 'yes',
+        spouse_dependency: formData.spouseDependency === 'yes',
+        introduction: formData.introduction,
+      }, {
+        onConflict: 'user_id',
+      });
 
-      if (dentalStaffError) throw dentalStaffError;
+    if (dentalStaffError) throw dentalStaffError;
 
-      // staff_preferences テーブルにデータを挿入
-      const { data: staffPreferencesData, error: staffPreferencesError } = await supabase
-        .from('staff_preferences')
-        .upsert({
-          user_id: user.id,
-          desired_profession: formData.desiredProfessions,
-          min_hourly_rate: formData.minHourlyRate,
-          max_hourly_rate: formData.maxHourlyRate,
-          desired_work_location: formData.desiredWorkLocation,
-        })
-        .select();
+    // staff_preferences テーブルの更新
+    const { error: staffPreferencesError } = await supabase
+      .from('staff_preferences')
+      .upsert({
+        user_id: user.id,
+        desired_profession: formData.desiredProfessions,
+        min_hourly_rate: formData.minHourlyRate,
+        max_hourly_rate: formData.maxHourlyRate,
+        desired_work_location: formData.desiredWorkLocation,
+      }, {
+        onConflict: 'user_id',
+      });
 
-      if (staffPreferencesError) throw staffPreferencesError;
+    if (staffPreferencesError) throw staffPreferencesError;
 
-      console.log('Form Data saved successfully:', { dentalStaffData, staffPreferencesData });
-      onNext(formData);
-    } catch (error) {
-      console.error('Error saving form data:', error);
-      // ここでエラーメッセージをユーザーに表示する処理を追加
-    }
-  };
+    console.log('Form Data saved successfully');
+    onNext(formData);
+  } catch (error) {
+    console.error('Error saving form data:', error);
+    // エラーメッセージをユーザーに表示
+    alert(`データの保存中にエラーが発生しました: ${error.message}`);
+  }
+};
 
   const handlePostalCodeSearch = async () => {
     try {
@@ -471,6 +476,22 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onNext }) => {
               onChange={handleChange}
               placeholder="○○県○○市○○町"
               sx={{ mt: 1 }}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <SectionTitle variant="h6">自己紹介</SectionTitle>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="自己紹介"
+              name="introduction"
+              value={formData.introduction}
+              onChange={handleChange}
+              placeholder="あなたの経験、スキル、性格などについて自由に記入してください。"
             />
           </Grid>
 
