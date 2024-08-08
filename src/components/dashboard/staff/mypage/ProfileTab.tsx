@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Grid,
   Card,
@@ -12,14 +12,18 @@ import {
   Snackbar,
   Alert,
   Paper,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-  FormLabel,
+  InputAdornment,
+  CircularProgress,
 } from '@mui/material';
+import {
+  Person,
+  Phone,
+  Home,
+  LocationOn,
+  CameraAlt,
+  Description,
+} from '@mui/icons-material';
 
-// 仮のプロフィールデータ型
 interface StaffProfileData {
   profilePhotoUrl: string;
   lastName: string;
@@ -27,7 +31,9 @@ interface StaffProfileData {
   lastNameKana: string;
   firstNameKana: string;
   nickname: string;
-  phoneNumber: string;
+  phoneNumber1: string;
+  phoneNumber2: string;
+  phoneNumber3: string;
   postalCode: string;
   prefecture: string;
   city: string;
@@ -35,12 +41,11 @@ interface StaffProfileData {
   buildingName: string;
   desiredWorkLocation: string;
   nearestStation: string;
-  maritalStatus: 'single' | 'married';
-  spouseDependency: 'yes' | 'no';
+  maritalStatus: string;
+  spouseDependency: string;
   introduction: string;
 }
 
-// 仮のプロフィールデータ
 const initialStaffData: StaffProfileData = {
   profilePhotoUrl: '/path/to/default/image.jpg',
   lastName: '山田',
@@ -48,7 +53,9 @@ const initialStaffData: StaffProfileData = {
   lastNameKana: 'ヤマダ',
   firstNameKana: 'ハナコ',
   nickname: 'はなちゃん',
-  phoneNumber: '090-1234-5678',
+  phoneNumber1: '090',
+  phoneNumber2: '1234',
+  phoneNumber3: '5678',
   postalCode: '123-4567',
   prefecture: '東京都',
   city: '千代田区',
@@ -56,8 +63,8 @@ const initialStaffData: StaffProfileData = {
   buildingName: 'サンプルマンション101',
   desiredWorkLocation: '東京都内',
   nearestStation: '東京駅',
-  maritalStatus: 'single',
-  spouseDependency: 'no',
+  maritalStatus: '未婚',
+  spouseDependency: 'なし',
   introduction: '歯科衛生士として5年の経験があります。患者さんの笑顔のために日々努力しています。',
 };
 
@@ -66,9 +73,10 @@ export default function ProfileTab() {
   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = () => {
-    // 実際にはここでデータを保存する処理を行う
     console.log('保存されたデータ:', staffData);
     setSnackbarMessage('プロフィールが更新されました！');
     setSnackbarSeverity('success');
@@ -83,8 +91,26 @@ export default function ProfileTab() {
   };
 
   const handlePhotoUpload = () => {
-    // 実際にはここで画像アップロード処理を行う
-    console.log('画像がアップロードされました');
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setStaffData(prevData => ({
+          ...prevData,
+          profilePhotoUrl: reader.result as string,
+        }));
+        setIsUploading(false);
+        setSnackbarMessage('プロフィール写真がアップロードされました');
+        setSnackbarSeverity('success');
+        setIsSnackbarOpen(true);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -99,7 +125,10 @@ export default function ProfileTab() {
     <Box sx={{ width: '100%', mt: 2 }}>
       <Grid container spacing={3}>
         <Grid item xs={12} md={4}>
-          <Paper elevation={3} sx={{ p: 2 }}>
+          <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <CameraAlt sx={{ mr: 1, color: 'primary.main' }} /> プロフィール写真
+            </Typography>
             <Box 
               sx={{ 
                 position: 'relative', 
@@ -120,6 +149,24 @@ export default function ProfileTab() {
                   objectFit: 'cover' 
                 }}
               />
+              {isUploading && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    borderRadius: '50%',
+                  }}
+                >
+                  <CircularProgress color="secondary" />
+                </Box>
+              )}
               <Box
                 sx={{
                   position: 'absolute',
@@ -143,6 +190,7 @@ export default function ProfileTab() {
               >
                 <Button
                   variant="contained"
+                  startIcon={<CameraAlt />}
                   sx={{
                     backgroundColor: 'rgba(255, 255, 255, 0.2)',
                     color: 'white',
@@ -154,12 +202,112 @@ export default function ProfileTab() {
                   画像を変更
                 </Button>
               </Box>
-            </Box>
+              </Box>
+            <input
+              type="file"
+              hidden
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="image/*"
+            />
+          
+          </Paper>
+          <Paper elevation={3} sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Home sx={{ mr: 1, color: 'primary.main' }} /> 住所情報
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="郵便番号"
+                  name="postalCode"
+                  value={staffData.postalCode}
+                  onChange={handleInputChange}
+                  margin="normal"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LocationOn />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="都道府県"
+                  name="prefecture"
+                  value={staffData.prefecture}
+                  onChange={handleInputChange}
+                  margin="normal"
+
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="市区町村"
+                  name="city"
+                  value={staffData.city}
+                  onChange={handleInputChange}
+                  margin="normal"
+                  
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="番地"
+                  name="address"
+                  value={staffData.address}
+                  onChange={handleInputChange}
+                  margin="normal"
+                  
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="建物名"
+                  name="buildingName"
+                  value={staffData.buildingName}
+                  onChange={handleInputChange}
+                  margin="normal"
+                  
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="希望勤務地"
+                  name="desiredWorkLocation"
+                  value={staffData.desiredWorkLocation}
+                  onChange={handleInputChange}
+                  margin="normal"
+                  
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="最寄り駅"
+                  name="nearestStation"
+                  value={staffData.nearestStation}
+                  onChange={handleInputChange}
+                  margin="normal"
+                 
+                />
+              </Grid>
+            </Grid>
           </Paper>
         </Grid>
         <Grid item xs={12} md={8}>
           <Card sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>基本情報</Typography>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 0 }}>
+              <Person sx={{ mr: 1, color: 'primary.main' }} /> 基本情報
+            </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -169,6 +317,7 @@ export default function ProfileTab() {
                   value={staffData.lastName}
                   onChange={handleInputChange}
                   margin="normal"
+                  
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -179,6 +328,7 @@ export default function ProfileTab() {
                   value={staffData.firstName}
                   onChange={handleInputChange}
                   margin="normal"
+                  
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -189,6 +339,7 @@ export default function ProfileTab() {
                   value={staffData.lastNameKana}
                   onChange={handleInputChange}
                   margin="normal"
+                  
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -199,6 +350,7 @@ export default function ProfileTab() {
                   value={staffData.firstNameKana}
                   onChange={handleInputChange}
                   margin="normal"
+                  
                 />
               </Grid>
               <Grid item xs={12}>
@@ -209,135 +361,91 @@ export default function ProfileTab() {
                   value={staffData.nickname}
                   onChange={handleInputChange}
                   margin="normal"
+                 
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="電話番号"
-                  name="phoneNumber"
-                  value={staffData.phoneNumber}
-                  onChange={handleInputChange}
-                  margin="normal"
-                />
+                <Typography variant="subtitle1" sx={{ display: 'flex', alignItems: 'center', mb: 2, mt: 1 }}>
+                  <Phone sx={{ mr: 1, color: 'primary.main' }} /> 電話番号
+                </Typography>
+                <Box display="flex" alignItems="center"sx={{ mb: 3 }}>
+                  <TextField
+                    name="phoneNumber1"
+                    value={staffData.phoneNumber1}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 3 }}
+                    sx={{ width: '20%' }}
+                  />
+                  <Typography sx={{ mx: 1 }}>-</Typography>
+                  <TextField
+                    name="phoneNumber2"
+                    value={staffData.phoneNumber2}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 4 }}
+                    sx={{ width: '25%' }}
+                  />
+                  <Typography sx={{ mx: 1 }}>-</Typography>
+                  <TextField
+                    name="phoneNumber3"
+                    value={staffData.phoneNumber3}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 4 }}
+                    sx={{ width: '25%' }}
+                  />
+                </Box>
               </Grid>
             </Grid>
-            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>住所</Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="郵便番号"
-                  name="postalCode"
-                  value={staffData.postalCode}
-                  onChange={handleInputChange}
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="都道府県"
-                  name="prefecture"
-                  value={staffData.prefecture}
-                  onChange={handleInputChange}
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="市区町村"
-                  name="city"
-                  value={staffData.city}
-                  onChange={handleInputChange}
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="番地"
-                  name="address"
-                  value={staffData.address}
-                  onChange={handleInputChange}
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="建物名"
-                  name="buildingName"
-                  value={staffData.buildingName}
-                  onChange={handleInputChange}
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="希望勤務地"
-                  name="desiredWorkLocation"
-                  value={staffData.desiredWorkLocation}
-                  onChange={handleInputChange}
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="最寄り駅"
-                  name="nearestStation"
-                  value={staffData.nearestStation}
-                  onChange={handleInputChange}
-                  margin="normal"
-                />
-              </Grid>
-            </Grid>
-            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>その他の情報</Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <FormControl component="fieldset">
-                  <FormLabel component="legend">配偶者の有無</FormLabel>
-                  <RadioGroup
-                    row
-                    aria-label="maritalStatus"
+            <Box sx={{ mt: 3, mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Description sx={{ mr: 1, color: 'primary.main' }} /> 自己紹介
+              </Typography>
+              <TextField
+                fullWidth
+                name="introduction"
+                value={staffData.introduction}
+                onChange={handleInputChange}
+                multiline
+                rows={4}
+              />
+            </Box>
+            <Box sx={{ mt: 3 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="配偶者の有無"
                     name="maritalStatus"
                     value={staffData.maritalStatus}
                     onChange={handleInputChange}
+                    
+                    SelectProps={{
+                      native: true,
+                    }}
                   >
-                    <FormControlLabel value="single" control={<Radio />} label="未婚" />
-                    <FormControlLabel value="married" control={<Radio />} label="既婚" />
-                  </RadioGroup>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl component="fieldset">
-                  <FormLabel component="legend">配偶者の扶養義務</FormLabel>
-                  <RadioGroup
-                    row
-                    aria-label="spouseDependency"
+                    <option value="未婚">未婚</option>
+                    <option value="既婚">既婚</option>
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="配偶者の扶養義務"
                     name="spouseDependency"
                     value={staffData.spouseDependency}
                     onChange={handleInputChange}
+                    
+                    SelectProps={{
+                      native: true,
+                    }}
                   >
-                    <FormControlLabel value="yes" control={<Radio />} label="あり" />
-                    <FormControlLabel value="no" control={<Radio />} label="なし" />
-                  </RadioGroup>
-                </FormControl>
+                    <option value="あり">あり</option>
+                    <option value="なし">なし</option>
+                  </TextField>
+                </Grid>
               </Grid>
-            </Grid>
-            <TextField
-              fullWidth
-              label="自己紹介"
-              name="introduction"
-              value={staffData.introduction}
-              onChange={handleInputChange}
-              margin="normal"
-              multiline
-              rows={6}
-            />
+            </Box>
           </Card>
         </Grid>
       </Grid>
