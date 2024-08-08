@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Grid,
   Card,
@@ -23,66 +23,93 @@ import {
   CameraAlt,
   Description,
 } from '@mui/icons-material';
-
-interface StaffProfileData {
-  profilePhotoUrl: string;
-  lastName: string;
-  firstName: string;
-  lastNameKana: string;
-  firstNameKana: string;
-  nickname: string;
-  phoneNumber1: string;
-  phoneNumber2: string;
-  phoneNumber3: string;
-  postalCode: string;
-  prefecture: string;
-  city: string;
-  address: string;
-  buildingName: string;
-  desiredWorkLocation: string;
-  nearestStation: string;
-  maritalStatus: string;
-  spouseDependency: string;
-  introduction: string;
-}
-
-const initialStaffData: StaffProfileData = {
-  profilePhotoUrl: '/path/to/default/image.jpg',
-  lastName: '山田',
-  firstName: '花子',
-  lastNameKana: 'ヤマダ',
-  firstNameKana: 'ハナコ',
-  nickname: 'はなちゃん',
-  phoneNumber1: '090',
-  phoneNumber2: '1234',
-  phoneNumber3: '5678',
-  postalCode: '123-4567',
-  prefecture: '東京都',
-  city: '千代田区',
-  address: '1-1-1',
-  buildingName: 'サンプルマンション101',
-  desiredWorkLocation: '東京都内',
-  nearestStation: '東京駅',
-  maritalStatus: '未婚',
-  spouseDependency: 'なし',
-  introduction: '歯科衛生士として5年の経験があります。患者さんの笑顔のために日々努力しています。',
-};
+import { useAuthContext } from '@/auth/hooks/use-auth-context';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { getStaffProfile, updateStaffProfile, StaffProfileData } from '@/app/actions/staff/profile';
 
 export default function ProfileTab() {
-  const [staffData, setStaffData] = useState<StaffProfileData>(initialStaffData);
+  // 状態の定義
+  const [staffData, setStaffData] = useState<StaffProfileData | null>(null);
   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // 参照の定義
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSave = () => {
-    console.log('保存されたデータ:', staffData);
-    setSnackbarMessage('プロフィールが更新されました！');
-    setSnackbarSeverity('success');
-    setIsSnackbarOpen(true);
+  // 認証コンテキストとSupabaseクライアントの取得
+  const { user } = useAuthContext();
+  const supabase = createClientComponentClient();
+
+  // コンポーネントのマウント時にプロフィールを取得
+  useEffect(() => {
+    if (user) {
+      fetchStaffProfile();
+    }
+  }, [user]);
+
+  // スタッフプロフィールを取得する関数
+  const fetchStaffProfile = async () => {
+    if (user) {
+      try {
+        const { profile, error } = await getStaffProfile(user.id);
+        if (error) {
+          throw new Error(error);
+        }
+        setStaffData(profile);
+      } catch (error) {
+        console.error('Error fetching staff profile:', error);
+        setSnackbarMessage('プロフィールの取得に失敗しました');
+        setSnackbarSeverity('error');
+        setIsSnackbarOpen(true);
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
+  // 変更を保存する関数
+  const handleSave = async () => {
+    if (user && staffData) {
+      try {
+        // プロフィール写真のアップロード
+        if (selectedFile) {
+          const { data, error } = await supabase.storage
+            .from('staff-profile-photos')
+            .upload(`${user.id}/profile.jpg`, selectedFile, { upsert: true });
+
+          if (error) throw error;
+
+          const { data: publicUrlData } = supabase.storage
+            .from('staff-profile-photos')
+            .getPublicUrl(`${user.id}/profile.jpg`);
+
+          staffData.profilePhotoUrl = publicUrlData.publicUrl;
+        }
+
+        // プロフィール情報の更新
+        const { success, error } = await updateStaffProfile(user.id, staffData);
+        if (error) throw new Error(error);
+
+        setSnackbarMessage('プロフィールが更新されました！');
+        setSnackbarSeverity('success');
+        setSelectedFile(null);
+        setPreviewImage(null);
+      } catch (error) {
+        console.error('Error updating staff profile:', error);
+        setSnackbarMessage('プロフィールの更新に失敗しました');
+        setSnackbarSeverity('error');
+      } finally {
+        setIsSnackbarOpen(true);
+      }
+    }
+  };
+
+  // スナックバーを閉じる関数
   const handleCloseSnackbar = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
@@ -90,43 +117,50 @@ export default function ProfileTab() {
     setIsSnackbarOpen(false);
   };
 
+  // 写真アップロードボタンのクリックハンドラ
   const handlePhotoUpload = () => {
     fileInputRef.current?.click();
   };
 
+  // ファイル選択時の処理
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setIsUploading(true);
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setStaffData(prevData => ({
-          ...prevData,
-          profilePhotoUrl: reader.result as string,
-        }));
-        setIsUploading(false);
-        setSnackbarMessage('プロフィール写真がアップロードされました');
-        setSnackbarSeverity('success');
-        setIsSnackbarOpen(true);
+        setPreviewImage(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  // 入力フィールドの変更ハンドラ
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setStaffData(prevData => ({
-      ...prevData,
+      ...prevData!,
       [name]: value,
     }));
   };
 
+  // ローディング中の表示
+  if (isLoading) {
+    return <CircularProgress />;
+  }
+
+  // プロフィールデータがない場合の表示
+  if (!staffData) {
+    return <Typography>プロフィールデータが利用できません</Typography>;
+  }
+
   return (
     <Box sx={{ width: '100%', mt: 2 }}>
       <Grid container spacing={3}>
+        {/* プロフィール写真セクション */}
         <Grid item xs={12} md={4}>
           <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
-          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <CameraAlt sx={{ mr: 1, color: 'primary.main' }} /> プロフィール写真
             </Typography>
             <Box 
@@ -140,7 +174,7 @@ export default function ProfileTab() {
             >
               <CardMedia
                 component="img"
-                image={staffData.profilePhotoUrl}
+                image={previewImage || staffData.profilePhotoUrl || '/path/to/default/image.jpg'}
                 alt="プロフィール写真"
                 sx={{ 
                   width: '100%', 
@@ -149,24 +183,6 @@ export default function ProfileTab() {
                   objectFit: 'cover' 
                 }}
               />
-              {isUploading && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    borderRadius: '50%',
-                  }}
-                >
-                  <CircularProgress color="secondary" />
-                </Box>
-              )}
               <Box
                 sx={{
                   position: 'absolute',
@@ -202,7 +218,7 @@ export default function ProfileTab() {
                   画像を変更
                 </Button>
               </Box>
-              </Box>
+            </Box>
             <input
               type="file"
               hidden
@@ -210,8 +226,9 @@ export default function ProfileTab() {
               onChange={handleFileChange}
               accept="image/*"
             />
-          
           </Paper>
+
+          {/* 住所情報セクション */}
           <Paper elevation={3} sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Home sx={{ mr: 1, color: 'primary.main' }} /> 住所情報
@@ -242,7 +259,6 @@ export default function ProfileTab() {
                   value={staffData.prefecture}
                   onChange={handleInputChange}
                   margin="normal"
-
                 />
               </Grid>
               <Grid item xs={6}>
@@ -253,7 +269,6 @@ export default function ProfileTab() {
                   value={staffData.city}
                   onChange={handleInputChange}
                   margin="normal"
-                  
                 />
               </Grid>
               <Grid item xs={6}>
@@ -264,7 +279,6 @@ export default function ProfileTab() {
                   value={staffData.address}
                   onChange={handleInputChange}
                   margin="normal"
-                  
                 />
               </Grid>
               <Grid item xs={6}>
@@ -275,7 +289,6 @@ export default function ProfileTab() {
                   value={staffData.buildingName}
                   onChange={handleInputChange}
                   margin="normal"
-                  
                 />
               </Grid>
               <Grid item xs={6}>
@@ -286,7 +299,6 @@ export default function ProfileTab() {
                   value={staffData.desiredWorkLocation}
                   onChange={handleInputChange}
                   margin="normal"
-                  
                 />
               </Grid>
               <Grid item xs={6}>
@@ -297,12 +309,13 @@ export default function ProfileTab() {
                   value={staffData.nearestStation}
                   onChange={handleInputChange}
                   margin="normal"
-                 
                 />
               </Grid>
             </Grid>
           </Paper>
         </Grid>
+
+        {/* 基本情報セクション */}
         <Grid item xs={12} md={8}>
           <Card sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 0 }}>
@@ -317,7 +330,6 @@ export default function ProfileTab() {
                   value={staffData.lastName}
                   onChange={handleInputChange}
                   margin="normal"
-                  
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -328,7 +340,6 @@ export default function ProfileTab() {
                   value={staffData.firstName}
                   onChange={handleInputChange}
                   margin="normal"
-                  
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -339,7 +350,6 @@ export default function ProfileTab() {
                   value={staffData.lastNameKana}
                   onChange={handleInputChange}
                   margin="normal"
-                  
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -350,7 +360,6 @@ export default function ProfileTab() {
                   value={staffData.firstNameKana}
                   onChange={handleInputChange}
                   margin="normal"
-                  
                 />
               </Grid>
               <Grid item xs={12}>
@@ -361,38 +370,20 @@ export default function ProfileTab() {
                   value={staffData.nickname}
                   onChange={handleInputChange}
                   margin="normal"
-                 
                 />
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle1" sx={{ display: 'flex', alignItems: 'center', mb: 2, mt: 1 }}>
                   <Phone sx={{ mr: 1, color: 'primary.main' }} /> 電話番号
                 </Typography>
-                <Box display="flex" alignItems="center"sx={{ mb: 3 }}>
-                  <TextField
-                    name="phoneNumber1"
-                    value={staffData.phoneNumber1}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 3 }}
-                    sx={{ width: '20%' }}
-                  />
-                  <Typography sx={{ mx: 1 }}>-</Typography>
-                  <TextField
-                    name="phoneNumber2"
-                    value={staffData.phoneNumber2}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 4 }}
-                    sx={{ width: '25%' }}
-                  />
-                  <Typography sx={{ mx: 1 }}>-</Typography>
-                  <TextField
-                    name="phoneNumber3"
-                    value={staffData.phoneNumber3}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 4 }}
-                    sx={{ width: '25%' }}
-                  />
-                </Box>
+                <TextField
+                  fullWidth
+                  label="電話番号"
+                  name="phoneNumber"
+                  value={staffData.phoneNumber}
+                  onChange={handleInputChange}
+                  margin="normal"
+                />
               </Grid>
             </Grid>
             <Box sx={{ mt: 3, mb: 3 }}>
@@ -402,7 +393,7 @@ export default function ProfileTab() {
               <TextField
                 fullWidth
                 name="introduction"
-                value={staffData.introduction}
+                value={staffData.introduction ?? ''}
                 onChange={handleInputChange}
                 multiline
                 rows={4}
@@ -418,13 +409,12 @@ export default function ProfileTab() {
                     name="maritalStatus"
                     value={staffData.maritalStatus}
                     onChange={handleInputChange}
-                    
                     SelectProps={{
                       native: true,
                     }}
                   >
-                    <option value="未婚">未婚</option>
-                    <option value="既婚">既婚</option>
+                    <option value="single">未婚</option>
+                    <option value="married">既婚</option>
                   </TextField>
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -433,15 +423,20 @@ export default function ProfileTab() {
                     select
                     label="配偶者の扶養義務"
                     name="spouseDependency"
-                    value={staffData.spouseDependency}
-                    onChange={handleInputChange}
-                    
+                    value={staffData.spouseDependency ? 'yes' : 'no'}
+                    onChange={(e) => {
+                      const newValue = e.target.value === 'yes';
+                      setStaffData(prevData => ({
+                        ...prevData!,
+                        spouseDependency: newValue
+                      }));
+                    }}
                     SelectProps={{
                       native: true,
                     }}
                   >
-                    <option value="あり">あり</option>
-                    <option value="なし">なし</option>
+                    <option value="yes">あり</option>
+                    <option value="no">なし</option>
                   </TextField>
                 </Grid>
               </Grid>

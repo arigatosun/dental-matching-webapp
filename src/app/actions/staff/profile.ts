@@ -21,6 +21,7 @@ export interface StaffProfileData {
   spouseDependency: boolean;
   desiredWorkLocation: string;
   profilePhotoUrl: string;
+  introduction?: string; 
 }
 
 // スタッフプロフィールを取得する関数
